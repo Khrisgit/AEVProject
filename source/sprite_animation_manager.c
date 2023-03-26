@@ -114,6 +114,16 @@ void draw_sprite_animation(object_2d_info_t* object)
 
 
 
+void draw_sprite_only(object_2d_info_t* object)
+{
+   
+    // Draw current sprite
+    C2D_DrawSprite(&object->object_sprite[object->frame_info.current_frame_index]);
+	
+}
+
+
+
 int get_frame_index(object_2d_info_t* object)
 {
 	return object->frame_info.current_frame_index;

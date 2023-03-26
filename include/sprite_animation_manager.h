@@ -121,7 +121,7 @@ void draw_sprite_animation(object_2d_info_t* object);
  * Update Update functions group end
  * @}
  */
- void draw_sprite_loop(object_2d_info_t* object);
+ void draw_sprite_only(object_2d_info_t* object);
 
  void reset_frame(object_2d_info_t* object);
 

@@ -1,5 +1,5 @@
-main.o: C:/Users/Chris/Desktop/AEV/Proyecto/source/main.c \
- C:/Users/Chris/Desktop/AEV/Proyecto/include/sprite_animation_manager.h \
+main.o: C:/Users/Chris/Documents/GitHub/AEVProject/source/main.c \
+ C:/Users/Chris/Documents/GitHub/AEVProject/include/sprite_animation_manager.h \
  C:/Users/Chris/Desktop/2Q/a/devkitPro/libctru/include/citro2d.h \
  C:/Users/Chris/Desktop/2Q/a/devkitPro/libctru/include/citro3d.h \
  C:/Users/Chris/Desktop/2Q/a/devkitPro/libctru/include/c3d/types.h \
@@ -108,10 +108,12 @@ main.o: C:/Users/Chris/Desktop/AEV/Proyecto/source/main.c \
  C:/Users/Chris/Desktop/2Q/a/devkitPro/libctru/include/c2d/sprite.h \
  C:/Users/Chris/Desktop/2Q/a/devkitPro/libctru/include/c2d/text.h \
  C:/Users/Chris/Desktop/2Q/a/devkitPro/libctru/include/c2d/font.h \
- C:/Users/Chris/Desktop/AEV/Proyecto/source/main.h \
- C:/Users/Chris/Desktop/AEV/Proyecto/source/system_math.h \
- C:/Users/Chris/Desktop/AEV/Proyecto/source/main_debug.h
-C:/Users/Chris/Desktop/AEV/Proyecto/include/sprite_animation_manager.h:
+ C:/Users/Chris/Documents/GitHub/AEVProject/include/main.h \
+ C:/Users/Chris/Documents/GitHub/AEVProject/include/sprite_animation_manager.h \
+ C:/Users/Chris/Documents/GitHub/AEVProject/include/main.h \
+ C:/Users/Chris/Documents/GitHub/AEVProject/include/system_math.h \
+ C:/Users/Chris/Documents/GitHub/AEVProject/include/main_debug.h
+C:/Users/Chris/Documents/GitHub/AEVProject/include/sprite_animation_manager.h:
 C:/Users/Chris/Desktop/2Q/a/devkitPro/libctru/include/citro2d.h:
 C:/Users/Chris/Desktop/2Q/a/devkitPro/libctru/include/citro3d.h:
 C:/Users/Chris/Desktop/2Q/a/devkitPro/libctru/include/c3d/types.h:
@@ -220,6 +222,8 @@ C:/Users/Chris/Desktop/2Q/a/devkitPro/libctru/include/c2d/spritesheet.h:
 C:/Users/Chris/Desktop/2Q/a/devkitPro/libctru/include/c2d/sprite.h:
 C:/Users/Chris/Desktop/2Q/a/devkitPro/libctru/include/c2d/text.h:
 C:/Users/Chris/Desktop/2Q/a/devkitPro/libctru/include/c2d/font.h:
-C:/Users/Chris/Desktop/AEV/Proyecto/source/main.h:
-C:/Users/Chris/Desktop/AEV/Proyecto/source/system_math.h:
-C:/Users/Chris/Desktop/AEV/Proyecto/source/main_debug.h:
+C:/Users/Chris/Documents/GitHub/AEVProject/include/main.h:
+C:/Users/Chris/Documents/GitHub/AEVProject/include/sprite_animation_manager.h:
+C:/Users/Chris/Documents/GitHub/AEVProject/include/main.h:
+C:/Users/Chris/Documents/GitHub/AEVProject/include/system_math.h:
+C:/Users/Chris/Documents/GitHub/AEVProject/include/main_debug.h:

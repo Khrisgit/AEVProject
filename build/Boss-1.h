@@ -5,3 +5,5 @@
 #define Boss_1_Boss_1_i2_idx 1
 #define Boss_1_Boss_1_i3_idx 2
 #define Boss_1_Boss_1_i4_idx 3
+#define Boss_1_Boss_1_i5_idx 4
+#define Boss_1_Boss_1_i6_idx 5

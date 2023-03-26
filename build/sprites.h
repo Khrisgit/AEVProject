@@ -2,7 +2,13 @@
 #pragma once
 
 #define sprites_player_shot_idx 0
-#define sprites_player_shot_idx 1
-#define sprites_bgintop_idx 2
-#define sprites_bginbot_idx 3
-#define sprites_bgout_idx 4
+#define sprites_bullet_1_idx 1
+#define sprites_bullet_2_idx 2
+#define sprites_bgintop_idx 3
+#define sprites_bginbot_idx 4
+#define sprites_bgout_idx 5
+#define sprites_bullet_3_idx 6
+#define sprites_bullet_4_idx 7
+#define sprites_bullet_5_idx 8
+#define sprites_UI_idx 9
+#define sprites_bg_space_idx 10

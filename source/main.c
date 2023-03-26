@@ -4,22 +4,25 @@
 
 // Atributos requeridos por las animaciones de sprites. 
 
-static object_2d_info_t player_object, orb_object, boss1_object;
+static object_2d_info_t player_object, orb_object, boss1_object, boss1_izq_object, barrier_object, hit_object;
 
-static C2D_Sprite player_sprite[8], orb_sprite[MAX_SPRITES], boss1_sprite[5];
+static C2D_Sprite player_sprite[8], orb_sprite[MAX_SPRITES], boss1_sprite[6], boss1_izq_sprite[3], barrier_sprite[11], hit_sprite[5];
 
 static sprite_pivot_t player_pivot = {0.5f, 0.5f}, orb_pivot = {0.5f, 0.5f},
-boss1_pivot = {0.5f, 0.5f};
+boss1_pivot = {0.34f, 0.47f}, boss1_izq_pivot = {0.34f, 0.47f}, barrier_pivot = {0.5f, 0.5f}, hit_pivot = {0.5f, 0.5f};
 
 static sprite_position_t player_position = {SCREEN_WIDTH_BOT/2, SCREEN_HEIGHT_BOT/2},
-orb_position = {0.0f, 0.0f}, boss1_position = {SCREEN_WIDTH_TOP/2, SCREEN_HEIGHT_TOP/2};
+orb_position = {0.0f, 0.0f}, boss1_position = {SCREEN_WIDTH_TOP/2, SCREEN_HEIGHT_TOP/2}, boss1_izq_position,
+barrier_position = {SCREEN_WIDTH_TOP/2, SCREEN_HEIGHT_TOP/2}, hit_position;
 
-static float player_roation = 0.0f, orb_rotation = 0.0f, boss1_rotation = 0.0f;
+static float player_roation = 0.0f, orb_rotation = 0.0f, boss1_rotation = 0.0f, boss1_izq_rotation = 0.0f, 
+barrier_rotation = 0.0f, hit_rotation = 0.0f;
 
-static float player_roation_speed = 0.0f, orb_rotation_speed = 2.0f, boss1_rotation_speed = 0.0f;
+static float player_roation_speed = 0.0f, orb_rotation_speed = 2.0f, boss1_rotation_speed = 0.0f, boss1_izq_rotation_speed = 0.0f,
+barrier_rotation_speed = 0.0f, hit_rotation_speed = 0.0f;
 
-static uint64_t sprite_refresh_ms_time = 100, orb_refresh_ms_time = 100, boss1_refresh_ms_time = 100 ;
-
+static uint64_t sprite_refresh_ms_time = 100, orb_refresh_ms_time = 100, boss1_refresh_ms_time = 200, boss1_izq_refresh_ms_time = 300,
+barrier_refresh_ms_time = 100, hit_refresh_ms_time = 100;
 
 // Atributos de sprites. 
 
@@ -27,26 +30,47 @@ static C2D_SpriteSheet general_spritesheet;
 
 static Sprite sprites[MAX_SPRITES];
 
-Sprite* fondo1;
-Sprite* fondo2;
+Sprite* fondo1_top;
+Sprite* fondo2_top;
+Sprite* fondo1_bottom;
+Sprite* fondo2_bottom;
 Sprite* fondoout;
 
 u32 bulletmask;
 bullet_t          bullets[MAX_BULLETS];
-player_str player;
+bullet_t          enemy_bullets[MAX_ENEMY_BULLETS];
+enemy_ship_t      enemy_ships[MAX_BOSSES];
+player_str 		  player;
 C2D_Sprite        bullet_normal_sprite;
+C2D_Sprite        bullet_normal_sprite2;
+C2D_Sprite        blue_plasma_mid_ball;
+C2D_Sprite        yellow_mid_ball;
+C2D_Sprite        red_big_ball;
+C2D_Sprite        UI;
+C2D_Sprite        enemy_sprites[SPRITE_ENEMY_TOTAL];
 
 // Atributos de control. 
 
 static bool focus = false; 	// Indica si el PJ está en estado "focus" 
-static float r = 35.0f; 	// Radio de giro de los orbes del PJ
+static bool focus_helper = false; 	// Indica si el PJ está en estado "focus" 
+static float r = 37.0f; 	// Radio de giro de los orbes del PJ
+static float max_enemy_hp_value = 250.0f;
+static float current_enemy_hp_value = 0;;
 static float t = 0.0f;  	// Tiempo transcurrido para el cálculo de movimiento de los orbes
+static float ts_radius;
 //static size_t bullets = 0;  // ID de los proyectiles del PJ
 
 static bool buttonPressed = false;  // Condición de botón presionado
+static bool skill = false;  // Condición de botón presionado
+static bool dead = false;  // Condición de botón presionado
 static u32 lastPrintTime = 0;		// Tiempo transcurrido
+unsigned int      framecount; // NOTE: PRINTFRAME needs this name to be unchanged
+unsigned int      last_hit_frame;
 
-bool rotacionFondo = true;	// ID de los proyectiles del PJ
+bool rotacionFondo_top = true;	
+bool rotacionFondo_bottom = true;	
+bool boss_direction = true; 	// Indica si el PJ está en estado "focus" 
+
 
 	void init_player()
 	{
@@ -80,43 +104,107 @@ bool rotacionFondo = true;	// ID de los proyectiles del PJ
 						  boss1_refresh_ms_time, \
 						  false);
 						  
+		initialize_object(&boss1_izq_object, \
+						  boss1_izq_sprite,	\
+						  "romfs:/gfx/Boss-1-izq.t3x", \
+						  boss1_izq_pivot, \
+						  boss1_izq_position, \
+						  boss1_izq_rotation, \
+						  boss1_izq_rotation_speed, \
+						  boss1_izq_refresh_ms_time, \
+						  true);
+						  
+		initialize_object(&barrier_object, \
+						  barrier_sprite,	\
+						  "romfs:/gfx/barrier.t3x", \
+						  barrier_pivot, \
+						  barrier_position, \
+						  barrier_rotation, \
+						  barrier_rotation_speed, \
+						  barrier_refresh_ms_time, \
+						  false);
+						  
+		initialize_object(&hit_object, \
+						  hit_sprite,	\
+						  "romfs:/gfx/hit.t3x", \
+						  hit_pivot, \
+						  hit_position, \
+						  hit_rotation, \
+						  hit_rotation_speed, \
+						  hit_refresh_ms_time, \
+						  true);
+						  
 		player.x = SCREEN_WIDTH_BOT/2;
 		player.y = SCREEN_HEIGHT_BOT/2;
 		player.yspeed = 0.0f;
 		player.xspeed = 0.0f;
-		player.radius = 10.0f;
+		player.radius = 3.0f;
 		player.health = PLAYER_HP_START;
 		//player.color  = RED;
 		player.effects &= 0;
 		player.player_spr = &player_object;
 		player.orb_spr = &orb_object;
 		
-	    player.vertices[X0] = -player.radius;        // vertex 0
-	    player.vertices[Y0] =  player.radius;
-	    player.vertices[X1] =  0.0f;                      // vertex 1
-	    player.vertices[Y1] = -player.radius*2.0f;
-	    player.vertices[X2] =  player.radius;        // vertex 2
-	    player.vertices[Y2] =  player.radius;
+		// enemy_ships[0].enemy_spr = &boss1_object;
+		// enemy_ships[0].barrier_spr = &barrier_object;
+		
+		
+		
+	    // player.vertices[X0] = -player.radius;        // vertex 0
+	    // player.vertices[Y0] =  player.radius;
+	    // player.vertices[X1] =  0.0f;                      // vertex 1
+	    // player.vertices[Y1] = -player.radius*2.0f;
+	    // player.vertices[X2] =  player.radius;        // vertex 2
+	    // player.vertices[Y2] =  player.radius;
 		
 		C2D_SpriteFromSheet(&bullet_normal_sprite, general_spritesheet, 0);
+		C2D_SpriteFromSheet(&bullet_normal_sprite2, general_spritesheet, 2);
+		C2D_SpriteFromSheet(&blue_plasma_mid_ball, general_spritesheet, 6);
+		C2D_SpriteFromSheet(&yellow_mid_ball, general_spritesheet, 7);
+		C2D_SpriteFromSheet(&red_big_ball, general_spritesheet, 8);
+		
+		C2D_SpriteFromSheet(&UI, general_spritesheet, 9);
+		C2D_SpriteSetCenter(&UI, 0.5f, 0.5f);
+		C2D_SpriteSetPos(&UI, SCREEN_WIDTH_TOP/2, SCREEN_HEIGHT_TOP/2);
+		
 		C2D_SpriteSetCenter(&bullet_normal_sprite, 0.5f, 0.5f);
+		C2D_SpriteSetCenter(&bullet_normal_sprite2, 0.5f, 0.5f);
+		C2D_SpriteSetCenter(&blue_plasma_mid_ball, 0.5f, 0.5f);
+		C2D_SpriteSetCenter(&yellow_mid_ball, 0.5f, 0.5f);
+		C2D_SpriteSetCenter(&red_big_ball, 0.5f, 0.5f);
+		
+		
+		
+		
+		
 		
 	}
 
 	void Init_BG()
 	{
 		
-		fondo1 = &sprites[0];
-		C2D_SpriteFromSheet(&fondo1->spr, general_spritesheet, 2);
-		C2D_SpriteSetCenter(&fondo1->spr, 0.5f, 1.0f);
-		C2D_SpriteSetPos(&fondo1->spr, SCREEN_WIDTH_TOP/2, 240.0f);
-		fondo1->dy = 1.0f;		
+		fondo1_top = &sprites[0];
+		C2D_SpriteFromSheet(&fondo1_top->spr, general_spritesheet, 10);
+		C2D_SpriteSetCenter(&fondo1_top->spr, 0.5f, 1.0f);
+		C2D_SpriteSetPos(&fondo1_top->spr, SCREEN_WIDTH_TOP/2, SCREEN_HEIGHT_TOP);
 		
-		fondo2 = &sprites[1];
-		C2D_SpriteFromSheet(&fondo2->spr, general_spritesheet, 2);
-		C2D_SpriteSetCenter(&fondo2->spr, 0.5f, 1.0f);
-		C2D_SpriteSetPos(&fondo2->spr, SCREEN_WIDTH_TOP/2, 0.0f);
-		fondo2->dy = 1.0f;	
+		
+		fondo2_top = &sprites[1];
+		C2D_SpriteFromSheet(&fondo2_top->spr, general_spritesheet, 10);
+		C2D_SpriteSetCenter(&fondo2_top->spr, 0.5f, 1.0f);
+		C2D_SpriteSetPos(&fondo2_top->spr, SCREEN_WIDTH_TOP/2, SCREEN_HEIGHT_TOP - 600.0f);
+		
+		fondo1_bottom = &sprites[2];
+		C2D_SpriteFromSheet(&fondo1_bottom->spr, general_spritesheet, 10);
+		C2D_SpriteSetCenter(&fondo1_bottom->spr, 0.5f, 1.0f);
+		C2D_SpriteSetPos(&fondo1_bottom->spr, SCREEN_WIDTH_TOP/2 - 40.0f, 600.0f);
+		
+		
+		fondo2_bottom = &sprites[3];
+		C2D_SpriteFromSheet(&fondo2_bottom->spr, general_spritesheet, 10);
+		C2D_SpriteSetCenter(&fondo2_bottom->spr, 0.5f, 1.0f);
+		C2D_SpriteSetPos(&fondo2_bottom->spr, SCREEN_WIDTH_TOP/2 - 40.0f, 0.0f);
+		
 		
 		// fondoout = &sprites[2];
 		// C2D_SpriteFromSheet(&fondoout->spr, general_spritesheet, 2);
@@ -127,27 +215,52 @@ bool rotacionFondo = true;	// ID de los proyectiles del PJ
 	
 
 	//---------------------------------------------------------------------------------
-	 void rotacionDelFondo(Sprite* fondo1, Sprite* fondo2){
+	 void rotacionDelFondo(Sprite* fondo1, Sprite* fondo2, float img_size, bool bottom){
 	//---------------------------------------------------------------------------------
-
-		if(fondo2->spr.params.pos.y == SCREEN_HEIGHT_TOP)
-					{
-						C2D_SpriteSetPos(&fondo1->spr, SCREEN_WIDTH_TOP/2, 0.0f);
-						rotacionFondo = true;
-					}		
-		if(rotacionFondo == true)
+	
+		if(skill)
 		{
-			if(fondo1->spr.params.pos.y==SCREEN_HEIGHT_TOP && fondo2->spr.params.pos.y> 300.0f)
-				{
-						C2D_SpriteSetPos(&fondo2->spr, SCREEN_WIDTH_TOP/2, 0.0f);
-						
-				}	
-			if(fondo2->spr.params.pos.y==SCREEN_HEIGHT_TOP && fondo1->spr.params.pos.y> 300.0f)
-				{
-						C2D_SpriteSetPos(&fondo1->spr, SCREEN_WIDTH_TOP/2, 0.0f);
-				}			
-		}	
-}
+			fondo1->dy = 0.0f; 
+			fondo2->dy = 0.0f;		
+		} 
+		else
+		{ 
+			fondo1->dy = 2.0f; 
+			fondo2->dy = 2.0f; 
+		}
+		
+		
+		if(!bottom)
+		{
+
+			if(fondo1->spr.params.pos.y == SCREEN_HEIGHT_TOP + img_size + 100.0f)
+			{
+				C2D_SpriteSetPos(&fondo1->spr, SCREEN_WIDTH_TOP/2, -(img_size - SCREEN_HEIGHT_TOP - 100.0f));
+			}	
+			if(fondo2->spr.params.pos.y == SCREEN_HEIGHT_TOP + img_size + 100.0f)
+			{
+				C2D_SpriteSetPos(&fondo2->spr, SCREEN_WIDTH_TOP/2, -(img_size - SCREEN_HEIGHT_TOP - 100.0f));
+			}			
+			
+		}
+		else
+		{
+			
+			if(fondo1->spr.params.pos.y == SCREEN_HEIGHT_TOP + img_size + 100.0f)
+			{
+				C2D_SpriteSetPos(&fondo1->spr, SCREEN_WIDTH_TOP/2 - 40.0f, -(img_size - SCREEN_HEIGHT_TOP - 100.0f));
+			}	
+			if(fondo2->spr.params.pos.y == SCREEN_HEIGHT_TOP + img_size + 100.0f)
+			{
+				C2D_SpriteSetPos(&fondo2->spr, SCREEN_WIDTH_TOP/2 - 40.0f, -(img_size - SCREEN_HEIGHT_TOP - 100.0f));
+			}	
+			
+		}
+		
+		C2D_SpriteMove(&fondo1->spr, 0, +fondo1->dy);		
+		C2D_SpriteMove(&fondo2->spr, 0, +fondo2->dy);
+		
+    }
 	
 	
 	 // void player_shot()    // Función que genera los proyectiles del PJ.
@@ -176,64 +289,19 @@ bool rotacionFondo = true;	// ID de los proyectiles del PJ
 		
 	// }
 	
-	void shoot_bullet(void)
-	{
-	  /* Check first free bullet size in array */
-	  int i = 0;
-	  for (; i < MAX_BULLETS; i++)
-		if (~(bulletmask >> i) & 1) break;
-	  
 
-	  /* If there is none ignore bullet fire */
-	  if (i >= MAX_BULLETS) return;
-	  
-	  /* Otherwise initialize bullet */
-	  bulletmask = bulletmask | (1 << i);
-	  bullets[i].x = orb_object.position.x;
-	  bullets[i].y = orb_object.position.y;
-
-
-	  bullets[i].xspeed = 0;
-	  bullets[i].yspeed = -BULLET_INITIAL_SPEED;
-	  bullets[i].sprite = &bullet_normal_sprite;
-	  bullets[i].bot_screen = true;
-	  bullets[i].dup = false;
-	}
 	
-	void shoot_bullet_2(float x, float y)
-	{
-	  /* Check first free bullet size in array */
-	  int i = 0;
-	  for (; i < MAX_BULLETS; i++)
-		if (~(bulletmask >> i) & 1) break;
-	  
+	void draw_bullets(void){
 
-	  /* If there is none ignore bullet fire */
-	  if (i >= MAX_BULLETS) return;
-	  
-	  /* Otherwise initialize bullet */
-	  bulletmask = bulletmask | (1 << i);
-	  bullets[i].x = x + 40;
-	  bullets[i].y = 240 + y;
-
-
-	  bullets[i].xspeed = 0;
-	  bullets[i].yspeed = -BULLET_INITIAL_SPEED;
-	  bullets[i].sprite = &bullet_normal_sprite;
-	  bullets[i].bot_screen = false;
-	  bullets[i].dup = false;
+	  for (int j = 0; j < MAX_ENEMY_BULLETS; ++j) {
+		if (enemy_bullets[j].state) { // not inactive
+			if(enemy_bullets[j].bot_screen == true){
+			  C2D_SpriteSetPos(enemy_bullets[j].sprite, enemy_bullets[j].x, enemy_bullets[j].y);
+			  C2D_SpriteSetRotation(enemy_bullets[j].sprite, deg_to_rad(-enemy_bullets[j].angle+90));
+			  C2D_DrawSprite(enemy_bullets[j].sprite);
+			}
+		}
 	}
-	
-	void draw_bullets(void)
-	{
-
-	  // for (int j = 0; j < MAX_ENEMY_BULLETS; ++j) {
-		// if (enemy_bullets[j].state) { // not inactive
-		  // C2D_SpriteSetPos(enemy_bullets[j].sprite, enemy_bullets[j].x, enemy_bullets[j].y);
-		  // C2D_SpriteSetRotation(enemy_bullets[j].sprite, deg_to_rad(-enemy_bullets[j].angle+90.0f));
-		  // C2D_DrawSprite(enemy_bullets[j].sprite);
-		// }
-	  // }
 	  
 	  int i = 0;
 	    for (; i < MAX_BULLETS; i++) {
@@ -248,16 +316,17 @@ bool rotacionFondo = true;	// ID de los proyectiles del PJ
 	  
 	}
 	
-		void draw_bullets_top(void)
-	{
+	void draw_bullets_top(void){
 
-	  // for (int j = 0; j < MAX_ENEMY_BULLETS; ++j) {
-		// if (enemy_bullets[j].state) { // not inactive
-		  // C2D_SpriteSetPos(enemy_bullets[j].sprite, enemy_bullets[j].x, enemy_bullets[j].y);
-		  // C2D_SpriteSetRotation(enemy_bullets[j].sprite, deg_to_rad(-enemy_bullets[j].angle+90.0f));
-		  // C2D_DrawSprite(enemy_bullets[j].sprite);
-		// }
-	  // }
+	  for (int j = 0; j < MAX_ENEMY_BULLETS; ++j) {
+		if (enemy_bullets[j].state) { // not inactive
+			if(enemy_bullets[j].bot_screen == false){
+			  C2D_SpriteSetPos(enemy_bullets[j].sprite, enemy_bullets[j].x, enemy_bullets[j].y);
+			  C2D_SpriteSetRotation(enemy_bullets[j].sprite, deg_to_rad(-enemy_bullets[j].angle+90));
+			  C2D_DrawSprite(enemy_bullets[j].sprite);
+			}
+		}
+	  }
 	  
 	  int i = 0;
 	    for (; i < MAX_BULLETS; i++) {
@@ -294,35 +363,39 @@ bool rotacionFondo = true;	// ID de los proyectiles del PJ
 		}
 	}*/
 	
+	void orb_movement(){		// Función que determina el movimiento del orbe que gira alrededor del PJ.{	
 	
-	void orb_movement()		// Función que determina el movimiento del orbe que gira alrededor del PJ.
-	{	
+		
 		
 		if(!focus)			// Si el PJ   NO   está "focus" (el orbe debe de girar alrededor del PJ)
 		{
 			
-			t += 0.001f;	// El tiempo sigue pasando
-		
-			 // ARREGLAR LA VUELTA DE FOCUS A NORMAL
-			 // IF NO SE CUMPLE
+			// El tiempo sigue pasando
+			t += 0.0015f;
 			
 			// Si el orbe se encuentra dentro de la esfera que debe de recorrer
 			
-			if(pow(r,2) >
-			(pow(player_object.position.x + r * cos(t * (180.0f / M_PI)),2) + 
-			pow(player_object.position.y - r * sin(t * (180.0f / M_PI)),2)))
+			if(inside_circle(orb_object.position.x, orb_object.position.y, player_object.position.x, player_object.position.y, r) && focus_helper)
 			{
+
 				// velocidad = punto donde se encuentra
-				orb_object.position_velocity.dx = 
-				(player_object.position.x + (player_object.position.x + r * cos(t * (180.0f / M_PI)))) / 5;
-				orb_object.position_velocity.dy = 
-				(player_object.position.y + (player_object.position.y - r * sin(t * (180.0f / M_PI)))) /5;
+				orb_object.position_velocity.dx =
+				((player_object.position.x + r * cos(t * (180.0f / M_PI))) - orb_object.position.x) / 5;
+				orb_object.position_velocity.dy =
+				((player_object.position.y - r * sin(t * (180.0f / M_PI))) - orb_object.position.y) / 5;
+				
+				
 			}
 			else  // sino (el orbe se encuentra en el límite de la esfera que debe recorrer)
 			{		
 				//  posición del orbe = posición del PJ + giro alrededor
+				
+				
+				
+				focus_helper = false;
 				orb_object.position.x = player_object.position.x + r * cos(t * (180.0f / M_PI));
 				orb_object.position.y = player_object.position.y - r * sin(t * (180.0f / M_PI));
+
 			}
 		}
 		else  // si el PJ    SI   está en modo "focus"
@@ -332,16 +405,42 @@ bool rotacionFondo = true;	// ID de los proyectiles del PJ
 			orb_object.position.y != player_object.position.y - 20.0f)
 			{
 				// velocidad del orbe = posición del PJ - 20 Y  (el orbe se mueve hasta donde está el PJ (-20 en la Y, es dcir, frente a él))
+				focus_helper = true;
 				orb_object.position_velocity.dx = (player_object.position.x - orb_object.position.x) / 5;
-				orb_object.position_velocity.dy = ((player_object.position.y - 20.0f) - orb_object.position.y)/5;
+				orb_object.position_velocity.dy = ((player_object.position.y - 20.0f) - orb_object.position.y) / 5;
+				
 			}
 		}
 		
 	}
 	
-
-	void player_logic(float x, float y, u32 kHeld)
+	enemy_ship_t spawn_enemy_ship(float x, float y, float xs, float ys, float r, float lives, float hp, object_2d_info_t* e_spr, object_2d_info_t* b_spr)
 	{
+	  enemy_ship_t new_enemy = {
+	  .x            		= x,
+	  .y            		= y,
+	  .xspeed       		= xs,
+	  .yspeed       		= ys,
+	  .radius       		= r,
+	  .lives        		= lives,
+	  .health       		= hp,
+	  .current_health 		= hp,
+	  .attspeed     		= 60,
+	  .state        		= ENEMY_STATE_ACTIVE,  
+	  .enemy_spr    		= e_spr,
+	  .barrier_spr 	 		= b_spr,
+	  .invencible   		= false,
+	  };
+	  // loot_table_t new_loot_table = {
+									 // .probabilities = {0.1f, 0.5f, 1.0f},
+									 // .items = {NOTHING, EXTRA_SCORE, PICKUP_HP},
+	  // };
+	  // new_enemy.loot_table = new_loot_table;
+	  return new_enemy;
+	}
+	
+
+	void player_logic(float x, float y, u32 kHeld){
 
 	  /* If player is dead, reset game and return */
 	  // TODO: game-over screen and better things here
@@ -361,9 +460,9 @@ bool rotacionFondo = true;	// ID de los proyectiles del PJ
 		{
 			if(!focus)  // si el PJ NO está "focus"
 			{
-				player.xspeed = x/33;				
+				player.xspeed = x/25;				
 				player.y = BG_LIMIT_UP_BOT;				
-				player_object.position_velocity.dx = x/33;	// velocidad normal del PJ en X (izq y derecha)
+				player_object.position_velocity.dx = x/25;	// velocidad normal del PJ en X (izq y derecha)
 				player_object.position.y = BG_LIMIT_UP_BOT; // posición permanente en ell borde
 			} 
 			else 		// si el PJ SI está "focus"
@@ -378,9 +477,9 @@ bool rotacionFondo = true;	// ID de los proyectiles del PJ
 		{
 			if(!focus)
 			{
-				player.xspeed = x/33;				
+				player.xspeed = x/25;				
 				player.y = BG_LIMIT_DOWN_BOT;				
-				player_object.position_velocity.dx = x/33;
+				player_object.position_velocity.dx = x/25;
 				player_object.position.y = BG_LIMIT_DOWN_BOT;
 			} 
 			else 
@@ -395,9 +494,9 @@ bool rotacionFondo = true;	// ID de los proyectiles del PJ
 		{
 			if(!focus)
 			{
-				player.yspeed = -y/33;
+				player.yspeed = -y/25;
 				player.x = BG_LIMIT_LEFT_BOT;				
-				player_object.position_velocity.dy = -y/33;
+				player_object.position_velocity.dy = -y/25;
 				player_object.position.x = BG_LIMIT_LEFT_BOT;
 			} 
 			else 
@@ -412,9 +511,9 @@ bool rotacionFondo = true;	// ID de los proyectiles del PJ
 		{
 			if(!focus)
 			{
-				player.yspeed = -y/33;
+				player.yspeed = -y/25;
 				player.x = BG_LIMIT_RIGHT_BOT;				
-				player_object.position_velocity.dy = -y/33;
+				player_object.position_velocity.dy = -y/25;
 				player_object.position.x = BG_LIMIT_RIGHT_BOT;
 			} 
 			else 
@@ -429,10 +528,10 @@ bool rotacionFondo = true;	// ID de los proyectiles del PJ
 		if(!focus)
 		{
 		
-			player.xspeed = x/33;
-			player.yspeed = -y/33;
-			player_object.position_velocity.dx = x/33;
-			player_object.position_velocity.dy = -y/33;		 
+			player.xspeed = x/25;
+			player.yspeed = -y/25;
+			player_object.position_velocity.dx = x/25;
+			player_object.position_velocity.dy = -y/25;		 
 		} 
 		else 
 		{
@@ -497,10 +596,56 @@ bool rotacionFondo = true;	// ID de los proyectiles del PJ
 	  // player.effects &= framecount - last_hit_frame < GRACE_PERIOD_AFTER_HIT ?
 		// (~0) : ~(PLAYER_EFFECT_BLINKING);
 	}
+	
+	void enemy_ship_logic(void)
+	{
+		
+		for (int n = 0; n < MAX_BOSSES; ++n) {
+			
+			if (enemy_ships[n].state) { // not inactive
+			
+			  float pbx = enemy_ships[n].x + enemy_ships[n].xspeed;
+			  float pby = enemy_ships[n].y + enemy_ships[n].yspeed;
+			  
+			  enemy_ships[n].x = pbx;
+			  enemy_ships[n].y = pby;
+			  enemy_ships[n].enemy_spr->position.x = pbx;
+			  enemy_ships[n].enemy_spr->position.y = pby;
+			  enemy_ships[n].barrier_spr->position.x = pbx;
+			  enemy_ships[n].barrier_spr->position.y = pby;
+
+			  if (enemy_ships[n].current_health <= 0)
+			  {
+			
+					enemy_ships[n].state = ENEMY_STATE_INACTIVE;
+					//last_hit_frame = framecount;
+			  }
+			  
+			  if(enemy_ships[n].xspeed < 0){
+				  
+				   enemy_ships[n].enemy_spr->object_sprite = boss1_izq_sprite;
+				   enemy_ships[n].enemy_spr->frame_info.current_frame_index = 0;
+				   enemy_ships[n].enemy_spr->frame_info.num_of_sprites = 3;
+				   enemy_ships[n].enemy_spr->refresh_info.refresh_time = boss1_izq_refresh_ms_time;
+				   enemy_ships[n].enemy_spr->frame_info.loop_once = true;
+			    }
+				   
+				   
+			  // if(enemy_ships[n].xspeed == 0)
+				  // enemy_ships[n].enemy_spr = &boss1_object;
+			  
+			  /* Disable bullet if it went offscreen */
+			  
+			  
+			}
+
+	  }
+
+	  
+	}
 
 
-	void move_player(float x, float y, u32 kHeld)	// Función que se encarga de mover al PJ por la pantalla INFERIOR sin salirse de ella.
-	{ 
+	void move_player(float x, float y, u32 kHeld){	// Función que se encarga de mover al PJ por la pantalla INFERIOR sin salirse de ella.{ 
 		// Si el PJ está en el borde SUPERIOR de la pantalla Y quiere ir hacia ARRIBA (dy negativa)
 		if ((player_object.position.y <= BG_LIMIT_UP_BOT) && (player_object.position_velocity.dy < 0))
 		{
@@ -571,31 +716,260 @@ bool rotacionFondo = true;	// ID de los proyectiles del PJ
 		orb_movement();
 		
 	}
+
+
+	void shoot_bullet(void)
+	{
+	  /* Check first free bullet size in array */
+	  int i = 0;
+	  for (; i < MAX_BULLETS; i++)
+		if (~(bulletmask >> i) & 1) break;
+	  
+
+	  /* If there is none ignore bullet fire */
+	  if (i >= MAX_BULLETS) return;
+	  
+	  /* Otherwise initialize bullet */
+	  bulletmask = bulletmask | (1 << i);
+	  bullets[i].x = orb_object.position.x;
+	  bullets[i].y = orb_object.position.y;
+
+
+	  bullets[i].xspeed = 0;
+	  bullets[i].yspeed = -BULLET_INITIAL_SPEED;
+	  bullets[i].sprite = &bullet_normal_sprite;
+	  bullets[i].bot_screen = true;
+	  bullets[i].dup = false;
+	}
 	
+	void shoot_bullet_2(float x, float y)
+	{
+	  /* Check first free bullet size in array */
+	  int i = 0;
+	  for (; i < MAX_BULLETS; i++)
+		if (~(bulletmask >> i) & 1) break;
+	  
+
+	  /* If there is none ignore bullet fire */
+	  if (i >= MAX_BULLETS) return;
+	  
+	  /* Otherwise initialize bullet */
+	  bulletmask = bulletmask | (1 << i);
+	  bullets[i].x = x + 40;
+	  bullets[i].y = y + 240;
+
+
+	  bullets[i].xspeed = 0;
+	  bullets[i].yspeed = -BULLET_INITIAL_SPEED;
+	  bullets[i].sprite = &bullet_normal_sprite;
+	  bullets[i].bot_screen = false;
+	  bullets[i].dup = false;
+	}
+	
+	void shoot_enemy_bullet_aim(float x, float y, float speed, float radius, C2D_Sprite *sprite, bool bot)
+	{
+	  int i = 0;
+	  for (; i < MAX_ENEMY_BULLETS; ++i) {
+			if (!enemy_bullets[i].state) { // inactive, free to use slot
+			  
+			  float dx, dy, a;
+			  
+			  if(bot){
+				  dx = player_object.position.x - x;
+				  dy = player_object.position.y - y;
+			  }else{
+				  dx = player_object.position.x - x + 40;
+				  dy = player_object.position.y - y + 240;				  
+			   }
+			   
+              a = atan2f(dy, dx);
+			  
+			  enemy_bullets[i].x = x;
+			  enemy_bullets[i].y = y;
+			  
+			  enemy_bullets[i].bot_screen = bot;
+			  
+			  enemy_bullets[i].radius = radius;
+			  enemy_bullets[i].angle = rad_to_deg(-a);
+			  
+			  enemy_bullets[i].spd = speed;
+			  
+			  enemy_bullets[i].xspeed = speed * cosf(a);
+			  enemy_bullets[i].yspeed = speed * sinf(a);
+			  
+			  enemy_bullets[i].sprite = sprite;
+			  
+			  enemy_bullets[i].state = BULLET_STATE_ACTIVE;
+			  
+			  break;
+			}	
+		}
+	}
+	
+	void shoot_enemy_bullet(float x, float y, float angle, float speed, float radius, C2D_Sprite *sprite, bool bot)
+	{
+	  int i = 0;
+	  for (; i < MAX_ENEMY_BULLETS; ++i) {
+			if (!enemy_bullets[i].state) { // inactive, free to use slot
+			  
+				if(!bot){
+				   enemy_bullets[i].x = x;
+				   enemy_bullets[i].y = y;
+			    }else{
+				  enemy_bullets[i].x = x - 40;
+				  enemy_bullets[i].y = y;				  
+			    }
+			  
+			  enemy_bullets[i].bot_screen = bot;
+			  
+			  enemy_bullets[i].radius = radius;
+			  enemy_bullets[i].angle = angle;
+			  
+			  enemy_bullets[i].spd = speed;
+			  
+			  enemy_bullets[i].xspeed = speed * cosf(deg_to_rad(-angle));
+			  enemy_bullets[i].yspeed = speed * sinf(deg_to_rad(-angle));
+
+			  enemy_bullets[i].sprite = sprite;
+			  
+			  enemy_bullets[i].state = BULLET_STATE_ACTIVE;
+			  
+			  enemy_bullets[i].dup = false;
+			 
+			  break;
+			}	
+		}
+	}
+	
+	void change_enemy_bullet(float x, float y, float angle, float speed, float radius, C2D_Sprite *sprite, bool bot)
+	{
+	  int i = 0;
+	  for (; i < MAX_ENEMY_BULLETS; ++i) {
+			if (!enemy_bullets[i].state) { // inactive, free to use slot
+			  
+			  	if(!bot){
+				   enemy_bullets[i].x = x;
+				   enemy_bullets[i].y = 240;
+			    }else{
+				  enemy_bullets[i].x = x - 40;
+				  enemy_bullets[i].y = 0;				  
+			    }
+				
+			  enemy_bullets[i].bot_screen = bot;
+			  
+			  enemy_bullets[i].radius = radius;
+			  
+			  enemy_bullets[i].angle = angle;
+			  
+			  enemy_bullets[i].spd = speed;
+			  
+			  enemy_bullets[i].xspeed = speed * cosf(deg_to_rad(-angle));
+			  enemy_bullets[i].yspeed = speed * sinf(deg_to_rad(-angle));
+
+			  enemy_bullets[i].sprite = sprite;
+			  
+			  enemy_bullets[i].state = BULLET_STATE_ACTIVE;
+			 
+			  break;
+			}	
+		}
+	}
+		
+	void burst(float x, float y, float speed, float radius, int total_bullets, C2D_Sprite *sprite, bool bot)
+	{
+	  int i = 0;
+	  for (; i < total_bullets; ++i) {
+			//u32 currentTime = osGetTime();
+			//if (currentTime - lastPrintTime >= time) {
+			//lastPrintTime = currentTime;
+			shoot_enemy_bullet(x, y, (360/total_bullets) * i, speed, radius, sprite, bot );
+			
+        }
+	}
+	
+	void burst_aim(float x, float y, float speed, float radius, int total_bullets, C2D_Sprite *sprite, bool bot)
+	{
+		
+	float dx, dy, a;
+			  
+		if(bot){
+			dx = player_object.position.x - x;
+			dy = player_object.position.y - y;
+		}else{
+			dx = player_object.position.x - x + 40;
+			dy = player_object.position.y - y + 240;				  
+		}
+	
+		a = atan2f(dy, dx);
+		
+	  int i = 0;
+	  for (; i < total_bullets; ++i) {
+			//u32 currentTime = osGetTime();
+			//if (currentTime - lastPrintTime >= time) {
+			//lastPrintTime = currentTime;
+			shoot_enemy_bullet(x, y, ((360)/total_bullets) * i - rad_to_deg(a), speed, radius, sprite, bot );
+			
+        }
+	}
 	
 	void bullet_logic(void)
 	{
 	  /* Check enemy bullets */
-	  // for (int n = 0; n < MAX_ENEMY_BULLETS; ++n) {
-		// if (enemy_bullets[n].state) { // not inactive
-		  // float ebx = enemy_bullets[n].x + enemy_bullets[n].xspeed;
-		  // float eby = enemy_bullets[n].y + enemy_bullets[n].yspeed;
-		  // enemy_bullets[n].x = ebx;
-		  // enemy_bullets[n].y = eby;
+	  for (int n = 0; n < MAX_ENEMY_BULLETS; ++n) {
+		if (enemy_bullets[n].state) { // not inactive
+		  float pbx = enemy_bullets[n].x + enemy_bullets[n].xspeed;
+		  float pby = enemy_bullets[n].y + enemy_bullets[n].yspeed;
+		  enemy_bullets[n].x = pbx;
+		  enemy_bullets[n].y = pby;
 
-		  // /* Check collision with player */
-		  // if (inside_circle(ebx, eby, player.x, player.y, player.radius) &&
+		  /* Check collision with player */
+		  // if (inside_circle(sbx, sby, player.x, player.y, player.radius) &&
 			  // framecount - last_hit_frame > GRACE_PERIOD_AFTER_HIT) {
-			// --player.health;
-			// last_hit_frame = framecount;
-			// player.effects = PLAYER_EFFECT_BLINKING;
-			// enemy_bullets[n].state = BULLET_STATE_INACTIVE;
-		  // }
-		  // /* Disable bullet if it went offscreen */
-		  // if (!inside_top_screen(ebx, eby))
-			// enemy_bullets[n].state = BULLET_STATE_INACTIVE;
-		// }
-	  // }
+				  
+		    if (enemy_bullets[n].bot_screen && cirlce_inside_circle(pbx, pby, player.x, player.y, player.radius, enemy_bullets[n].radius) ){
+			  // framecount - last_hit_frame > GRACE_PERIOD_AFTER_HIT) {
+			//--player.health; 
+			dead = true;
+			last_hit_frame = framecount;
+			//player.effects = PLAYER_EFFECT_BLINKING;
+			
+			enemy_bullets[n].state = BULLET_STATE_INACTIVE;
+		  }
+		  /* Disable bullet if it went offscreen */
+		  
+		  if (enemy_bullets[n].y > 245 && enemy_bullets[n].bot_screen == false && enemy_bullets[n].dup == false) 
+		  {
+			
+			change_enemy_bullet(enemy_bullets[n].x, 0, enemy_bullets[n].angle,
+				enemy_bullets[n].spd, enemy_bullets[n].radius, enemy_bullets[n].sprite, true );
+							
+			enemy_bullets[n].dup = true;
+		  }
+		  if (enemy_bullets[n].y < -5 && enemy_bullets[n].bot_screen == true && enemy_bullets[n].dup == false) 
+		  {
+			  
+			change_enemy_bullet(enemy_bullets[n].x+40, 240, enemy_bullets[n].angle,
+				enemy_bullets[n].spd, enemy_bullets[n].radius, enemy_bullets[n].sprite, false );
+				
+			enemy_bullets[n].dup = true;
+		  }
+		  
+		  if(!inside_rect(enemy_bullets[n].x, enemy_bullets[n].y,
+				-20, SCREEN_WIDTH_TOP+20, -20, SCREEN_HEIGHT_TOP+20) 
+				&& enemy_bullets[n].bot_screen == false)
+		    {
+			  enemy_bullets[n].state = BULLET_STATE_INACTIVE;
+			  //dead = true;
+		    }
+		  
+		  if(!inside_rect(enemy_bullets[n].x, enemy_bullets[n].y,
+				 -20, SCREEN_WIDTH_BOT+20, -20, SCREEN_HEIGHT_BOT+20) 
+				 && enemy_bullets[n].bot_screen == true)
+		    {
+			   enemy_bullets[n].state = BULLET_STATE_INACTIVE;
+		    }
+		}
+	  }
 
 
 	  /* Check player bullets */
@@ -617,37 +991,25 @@ bool rotacionFondo = true;	// ID de los proyectiles del PJ
 			  // return;
 			// }
 			  
+			for (int j = 0; j < MAX_BOSSES; j++) { 
+			
+				if (!bullets[i].bot_screen && cirlce_inside_circle(bx, by, enemy_ships[j].x, enemy_ships[j].y, enemy_ships[j].radius, bullets[i].radius) && enemy_ships[j].state)
+				{
+					if(!enemy_ships[j].invencible)
+					enemy_ships[j].current_health -= 1.0f;
+					bulletmask &= ~(1 << i);
+				}
+				
+			}
 
-		  /* Check for asteroid hit */
-
-		  // Ignore inactive asteroids
-		  // int j = 0;
-		  // for (; j < MAX_ASTEROIDS; j++) {
-			// if (asteroidmask >> j & 1) {
-			  // float ax   = asteroids[j].x;
-			  // float ay   = asteroids[j].y;
-			  // float arad = asteroids[j].radius;
-			  // if (inside_circle(bx, by, ax, ay, arad)) {
-				// PRINTDBULLETS("Bullet hit at %3.2f, %3.2f\n", bx, by);
-				// /* TODO: FX on bullet hit */
-				// bulletmask = bulletmask & ~(1 << i);
-				// break_asteroid(&asteroids[j], j);
-				// return;
-			  // }
-			// }
-		  // }bulletmask &= ~(1 << i);
-		  // /* If bullet went out of bounds we disable it */
 		  if (bullets[i].y < 15 && bullets[i].bot_screen == true && bullets[i].dup == false) {
 				shoot_bullet_2(bullets[i].x, bullets[i].y);
 				bullets[i].dup = true;
-			// bullets[i].x = bx + 40;
-			// bullets[i].y = 250.0f;
-		  }
+				
+		    }
 		  if (bullets[i].y < -15 && bullets[i].bot_screen == true && bullets[i].dup == true) {
-			//bullets[i].bot_screen = false;
-			bulletmask &= ~(1 << i);
-			
-		  }
+				bulletmask &= ~(1 << i);
+		    }
 		  if (bullets[i].y < -15 && bullets[i].bot_screen == false) {
 			bulletmask &= ~(1 << i);
 			
@@ -655,7 +1017,58 @@ bool rotacionFondo = true;	// ID de los proyectiles del PJ
 		}
 	  }
 	}
+
+
+
+// void draw_gameover_fade(void)
+// {
+  // u32 color = C2D_Color32f(0.0f, 0.0f, 0.0f, 0.0f + (framecount - gameover_frame)/300.0f);
+  // C2D_DrawRectSolid(0.0f, 0.0f, 1.0f, SCREEN_WIDTH_TOP, SCREEN_HEIGHT_TOP, color);
+// }
+
+// void move_boss_sprite_random(float speed, enemy_ship_t e)
+// {
+
 	
+    // e->xspeed = ((randomBetween(SCREEN_WIDTH_TOP - 25, 25) - e->position.x) * speed) / 1000;
+	// e->yspeed = ((SCREEN_HEIGHT_TOP/2 - e->position.y) * speed) / 1000;
+	
+
+// }
+
+
+// void move_enemy_sprite_random(float limit_x_down, float limit_x_up, float limit_y_down, float limit_y_up, float speed, float max_accel, object_2d_info_t* e)
+// {
+
+	// move_enemy_sprite_to( randomBetween(limit_x_down,limit_x_up),  randomBetween(limit_y_down,limit_y_up),
+		// speed, max_accel, e);
+	
+// }
+
+void level_1(object_2d_info_t* e)
+{
+	
+
+	
+	
+	
+	// if(e->position.x < SCREEN_WIDTH_TOP/2 && e->position.y < SCREEN_HEIGHT_TOP/2 ){
+	// move_enemy_sprite_to(SCREEN_WIDTH_TOP/2, SCREEN_HEIGHT_TOP/2, 10.0f, 1.0f, &boss1_object);
+	// }else{
+		// e->position_velocity.dx = 0;
+		// e->position_velocity.dy = 0;
+	// }
+	
+	
+}
+
+void move_boss(enemy_ship_t e)
+{
+	
+	e.xspeed = -5.0f;
+	
+}
+
 
 //------------------------------------------------------------------------------------------
 
@@ -664,20 +1077,22 @@ int main(int argc, char* argv[])
 //------------------------------------------------------------------------------------------
 	// Init libs
 	romfsInit();
+	srvInit();
+    aptInit();
 	
-	gfxInitDefault();
+	//gfxInitDefault();
+	gfxInit(GSP_BGR8_OES, GSP_BGR8_OES, false);
 	C3D_Init(C3D_DEFAULT_CMDBUF_SIZE);
 	C2D_Init(C2D_DEFAULT_MAX_OBJECTS);
 	C2D_Prepare();
 	//consoleInit(GFX_TOP, NULL);
-
-
+	
+	
 	// Create screens
 	C3D_RenderTarget* top = C2D_CreateScreenTarget(GFX_TOP, GFX_LEFT);
 	C3D_RenderTarget* bottom = C2D_CreateScreenTarget(GFX_BOTTOM, GFX_LEFT);
 	
-
-
+ 
 	// Load graphics and initialize player sprites
 	general_spritesheet = C2D_SpriteSheetLoad("romfs:/gfx/sprites.t3x");
 	if (!general_spritesheet) svcBreak(USERBREAK_PANIC);
@@ -685,6 +1100,15 @@ int main(int argc, char* argv[])
 	//Inicializar
 	init_player();
 	Init_BG();
+	
+	enemy_ships[0] = spawn_enemy_ship(200.0f, 120.0f, 0.0f, 0.0f, 30.0f, 4, 20.0f, &boss1_object, &barrier_object);
+	
+	
+	
+	
+
+
+	
 	
 	
 	
@@ -701,29 +1125,70 @@ int main(int argc, char* argv[])
 		u32 kHeld = hidKeysHeld();
 		
 		if (kDown & KEY_START) {
-			break; // break in order to return to hbmenu
+			skill = !skill;
 		}
 
 		// Congfigure a sprite refresh time [ms]
 		
 		
 		if (kHeld & KEY_A) {
+			//skill = true;
+			// enemy_ship_t e = spawn_enemy_ship(float SCREEN_WIDTH_BOT/2, float SCREEN_HEIGHT_TOP/2,
+			// float 0, float 0, float 0, u32 255);
+			            // Verifica si han pasado al menos 150 milisegundos desde la última vez que se imprimió el sprite.
+                        u32 currentTime = osGetTime();
+            if (currentTime - lastPrintTime >= 150) {
+                buttonPressed = true;
+                lastPrintTime = currentTime;
+                // barrage_2(200.0f, 100.0f, 
+			// 2.0f, 2.0f, 90.0f, &bullet_normal_sprite2,
+			// 2.0f, 24, 150.0f, 10);
+			
+			// shoot_enemy_bullet(200.0f, 100.0f, 
+			 // player.x, player.y, 45.0f, &bullet_normal_sprite2,
+			 // 2.0f);
+			 
+			 //shoot_enemy_bullet_aim(200.0f, 100.0f, 7.0f, 2.0f, &bullet_normal_sprite2, false);
+			 
+			 //shoot_enemy_bullet(200.0f, 100.0f, 90.0f, 2.0f, 2.0f, &bullet_normal_sprite2, true);
+			 
+			 //burst_aim(200.0f, 100.0f, 1.8f, 25.0f, 7, &red_big_ball, false);
+			 burst_aim(SCREEN_WIDTH_TOP/2, SCREEN_HEIGHT_TOP/2, 2.5f, 12.5f, 30, &yellow_mid_ball, false);
+			 
+			 
+			 
+            }
+			
+        }
+		
+		if (kDown & KEY_B) 
+		{
+            
+            skill = !skill;
+			
+			ts_radius = 700.0f;
 			
 		}
+		
 		if ((kHeld & KEY_B) && player_object.refresh_info.refresh_time > ANIMATION_REFRESH_TIME_MIN) {
 			//player_object.refresh_info.refresh_time--;
 		}
-		if (kHeld & KEY_X) {
+		if (kDown & KEY_A) {
 			//player_object.frame_info.loop_once = true; Z
+			//move_enemy_sprite_to(1.0f, &boss1_object);
+			//level_1(&boss1_object);
+			
+			
 		}
-		if (kHeld & KEY_Y) {
+		if (kHeld & KEY_L) {
+			enemy_ships[0].xspeed = -0.7f;
 			//player_object.frame_info.loop_once = false; X
 		}
-		if (kHeld & KEY_R) {
+		if (kHeld & KEY_Y) {
 			focus = true;
 		}
 		else focus = false;
-		if (kHeld & KEY_L) {
+		if (kHeld & KEY_X && !skill) {
 			
             // Verifica si han pasado al menos 150 milisegundos desde la última vez que se imprimió el sprite.
             u32 currentTime = osGetTime();
@@ -742,27 +1207,38 @@ int main(int argc, char* argv[])
 		hidCircleRead(&pos);
 
 		//move_player(pos.dx, pos.dy, kHeld);
-		player_logic(pos.dx, pos.dy, kHeld);
-		bullet_logic();
+		// enemy_ships[0] = spawn_enemy_ship(200.0f, 120.0f, 1.0f, 1.0f, 200.0f, 20.0f, &boss1_object, &barrier_object);
 		
-	
+		player_logic(pos.dx, pos.dy, kHeld);
+		
+		if(!skill)
+		{
+			bullet_logic();
+			enemy_ship_logic();
+		}
+		
 		// Print debug messages on the bottom screen
-		printf("\x1b[2;1HCPU:     %6.2f%%\x1b[K", C3D_GetProcessingTime()*6.0f);
-		printf("\x1b[3;1HGPU:     %6.2f%%\x1b[K", C3D_GetDrawingTime()*6.0f);
-		printf("\x1b[4;1HCmdBuf:  %6.2f%%\x1b[K", C3D_GetCmdBufUsage()*100.0f);
+		// printf("\x1b[2;1HCPU:     %6.2f%%\x1b[K", C3D_GetProcessingTime()*6.0f);
+		// printf("\x1b[3;1HGPU:     %6.2f%%\x1b[K", C3D_GetDrawingTime()*6.0f);
+		// printf("\x1b[4;1HCmdBuf:  %6.2f%%\x1b[K", C3D_GetCmdBufUsage()*100.0f);
 
-		printf("\x1b[6;1HTime elapsed:  %lld ms\x1b[K", player_object.refresh_info.elapsed);
-		printf("\x1b[7;1HSprite refresh time:  %lld ms\x1b[K", player_object.refresh_info.refresh_time);
-		printf("\x1b[8;1HX:  %f", orb_object.position.x);
-		printf("\x1b[9;1HY:  %f", orb_object.position.y);
+		// printf("\x1b[6;1HTime elapsed:  %lld ms\x1b[K", player_object.refresh_info.elapsed);
+		// printf("\x1b[7;1HSprite refresh time:  %lld ms\x1b[K", player_object.refresh_info.refresh_time);
+		// printf("\x1b[8;1HX:  %f", orb_object.position.x);
+		// printf("\x1b[9;1HY:  %f", orb_object.position.y);
 
 		// Render the scene
 		
 		
 		update_object(&player_object);
 		update_object(&orb_object);
+		
 		update_object(&boss1_object);
+		
+		update_object(&barrier_object);
 		//moveSprites();
+		
+		if(current_enemy_hp_value > -max_enemy_hp_value){current_enemy_hp_value -= 5.0f;}
 	
 		
 		// -------------------------------------------------------------------------------------------------------
@@ -773,25 +1249,52 @@ int main(int argc, char* argv[])
 		C2D_TargetClear(bottom, C2D_Color32f(0.0f, 0.0f, 0.0f, 1.0f));
 		C2D_SceneBegin(bottom);
 			
-		
 			
-		for (size_t i = 0; i < 3; i ++)
+		for (size_t i = 2; i < 4; i ++)
 		{
 			C2D_DrawSprite(&sprites[i].spr);
 		}
-		C2D_SpriteMove(&fondo1->spr, 0, +fondo1->dy);		
-		C2D_SpriteMove(&fondo2->spr, 0, +fondo2->dy);	
-		
-		rotacionDelFondo(fondo1, fondo2);
+		rotacionDelFondo(fondo1_bottom, fondo2_bottom, 600.0f, true);
 	
-		
-		
-		draw_bullets();
-		
+		if(!dead){
 		draw_sprite_animation(&orb_object);
 		draw_sprite_animation(&player_object);
-	
+		}
 		
+		// if(dead){
+			
+			// draw_gameover_fade();
+		// }
+	
+	
+		draw_bullets();
+		
+		if(!skill){
+			
+			C2D_DrawLine (SCREEN_WIDTH_BOT/2, -SCREEN_HEIGHT_TOP/2, C2D_Color32f(1.0f, 0.0f, 0.1f, 0.5f), 
+				player_object.position.x, player_object.position.y, C2D_Color32f(1.0f, 0.0f, 0.1f, 0.5f), 1.0f, 0.0f);
+		}
+		
+
+		if(skill){
+
+			
+			
+			
+			if(ts_radius > 0){
+			
+				C2D_DrawCircleSolid(player_object.position.x , player_object.position.y, 0, ts_radius, 
+					C2D_Color32f(1.0f, 0.0f, 0.0f, 0.15f));
+					
+				ts_radius -= 15.0f;
+				 
+				}
+			//skill = !skill;
+		}
+		
+
+		
+
 		
 		C2D_Flush(); // Limpiar buffer de pantalla inferior
 		
@@ -803,26 +1306,69 @@ int main(int argc, char* argv[])
 		C2D_TargetClear(top, C2D_Color32f(0.0f, 0.0f, 0.0f, 1.0f));
 		C2D_SceneBegin(top);
 
-		for (size_t i = 0; i < 3; i ++)
+		for (size_t i = 0; i < 2; i ++)
 		{
 			C2D_DrawSprite(&sprites[i].spr);
 		}
+		rotacionDelFondo(fondo1_top, fondo2_top, 600.0f, false);
+
 		
-		C2D_SpriteMove(&fondo1->spr, 0, +fondo1->dy);		
-		C2D_SpriteMove(&fondo2->spr, 0, +fondo2->dy);	
+
+	
 		
-		rotacionDelFondo(fondo1, fondo2);
+		
+		if(!skill){
+		draw_sprite_animation(&boss1_object);
+		draw_sprite_animation(&barrier_object);
+		C2D_DrawLine (SCREEN_WIDTH_TOP/2, SCREEN_HEIGHT_TOP/2, C2D_Color32f(1.0f, 0.0f, 0.1f, 0.5f), 
+			player_object.position.x + 40.0f, player_object.position.y + 240.0f, C2D_Color32f(1.0f, 0.0f, 0.1f, 0.5f), 1.0f, 0.0f);
+		}
+		if(skill){
+		draw_sprite_only(&boss1_object);
+		draw_sprite_only(&barrier_object);
+		}
+		C2D_DrawSprite(&UI);
 		
 		draw_bullets_top();
 		
-		draw_sprite_animation(&boss1_object);
+		if(skill){
+
+			
+			
+			
+			if(ts_radius > 0){
+			
+				C2D_DrawCircleSolid(player_object.position.x + 40.0f, player_object.position.y + 240.0f, 0, ts_radius, 
+					C2D_Color32f(1.0f, 0.0f, 0.0f, 0.15f));
+					
+				ts_radius -= 22.0f;
+				 
+				}
+			//skill = !skill;
+		}
+		
+
+		
+		//draw_sprite_animation(&barrier_object);
+		
+
+		
+
+		C2D_DrawRectangle(SCREEN_WIDTH_TOP, 14, 0, -enemy_ships[0].current_health*(250/enemy_ships[0].health), 6, 
+		C2D_Color32f(0.0f, 1.0f, 0.0f, 1.0f), C2D_Color32f(0.0f, 1.0f, 0.0f, 1.0f), C2D_Color32f(0.0f, 1.0f, 0.0f, 1.0f), C2D_Color32f(0.0f, 1.0f, 0.0f, 1.0f));
+		
+		
+
 
 		C3D_FrameEnd(0);
+		
 	}
 
 	// Delete graphics
 	deinitialize_object(&orb_object);
 	deinitialize_object(&player_object);
+	deinitialize_object(&boss1_object);
+	deinitialize_object(&barrier_object);
 	C2D_SpriteSheetFree(general_spritesheet);
 	
 	// Deinit libs
@@ -830,6 +1376,8 @@ int main(int argc, char* argv[])
 	C2D_Fini();
 	C3D_Fini();
 	gfxExit();
+    aptExit();
+    srvExit();
 	romfsExit();
 
 	return 0;
