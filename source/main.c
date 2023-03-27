@@ -1,7 +1,6 @@
 #include "sprite_animation_manager.h"
 #include "main.h"
 
-
 // Atributos requeridos por las animaciones de sprites. 
 
 static object_2d_info_t player_object, orb_object, boss1_object, boss1_izq_object, barrier_object, hit_object;
@@ -69,7 +68,8 @@ unsigned int      last_hit_frame;
 
 bool rotacionFondo_top = true;	
 bool rotacionFondo_bottom = true;	
-bool boss_direction = true; 	// Indica si el PJ está en estado "focus" 
+bool direction_helper = false; 	// Indica si el PJ está en estado "focus" 
+bool left = true;
 
 
 	void init_player()
@@ -223,7 +223,7 @@ bool boss_direction = true; 	// Indica si el PJ está en estado "focus"
 			fondo1->dy = 0.0f; 
 			fondo2->dy = 0.0f;		
 		} 
-		else
+		else // poner velocidades tipo 2, 4, 5...  3 NO
 		{ 
 			fondo1->dy = 2.0f; 
 			fondo2->dy = 2.0f; 
@@ -233,11 +233,11 @@ bool boss_direction = true; 	// Indica si el PJ está en estado "focus"
 		if(!bottom)
 		{
 
-			if(fondo1->spr.params.pos.y == SCREEN_HEIGHT_TOP + img_size + 100.0f)
+			if(fondo1->spr.params.pos.y >= SCREEN_HEIGHT_TOP + img_size + 100.0f)
 			{
 				C2D_SpriteSetPos(&fondo1->spr, SCREEN_WIDTH_TOP/2, -(img_size - SCREEN_HEIGHT_TOP - 100.0f));
 			}	
-			if(fondo2->spr.params.pos.y == SCREEN_HEIGHT_TOP + img_size + 100.0f)
+			if(fondo2->spr.params.pos.y >= SCREEN_HEIGHT_TOP + img_size + 100.0f)
 			{
 				C2D_SpriteSetPos(&fondo2->spr, SCREEN_WIDTH_TOP/2, -(img_size - SCREEN_HEIGHT_TOP - 100.0f));
 			}			
@@ -246,11 +246,11 @@ bool boss_direction = true; 	// Indica si el PJ está en estado "focus"
 		else
 		{
 			
-			if(fondo1->spr.params.pos.y == SCREEN_HEIGHT_TOP + img_size + 100.0f)
+			if(fondo1->spr.params.pos.y >= SCREEN_HEIGHT_TOP + img_size + 100.0f)
 			{
 				C2D_SpriteSetPos(&fondo1->spr, SCREEN_WIDTH_TOP/2 - 40.0f, -(img_size - SCREEN_HEIGHT_TOP - 100.0f));
 			}	
-			if(fondo2->spr.params.pos.y == SCREEN_HEIGHT_TOP + img_size + 100.0f)
+			if(fondo2->spr.params.pos.y >= SCREEN_HEIGHT_TOP + img_size + 100.0f)
 			{
 				C2D_SpriteSetPos(&fondo2->spr, SCREEN_WIDTH_TOP/2 - 40.0f, -(img_size - SCREEN_HEIGHT_TOP - 100.0f));
 			}	
@@ -414,7 +414,8 @@ bool boss_direction = true; 	// Indica si el PJ está en estado "focus"
 		
 	}
 	
-	enemy_ship_t spawn_enemy_ship(float x, float y, float xs, float ys, float r, float lives, float hp, object_2d_info_t* e_spr, object_2d_info_t* b_spr)
+	enemy_ship_t spawn_enemy_ship(float x, float y, float xs, float ys, float r, float lives, float hp, 
+									object_2d_info_t* e_spr, object_2d_info_t* b_spr)
 	{
 	  enemy_ship_t new_enemy = {
 	  .x            		= x,
@@ -917,8 +918,10 @@ bool boss_direction = true; 	// Indica si el PJ está en estado "focus"
 	  /* Check enemy bullets */
 	  for (int n = 0; n < MAX_ENEMY_BULLETS; ++n) {
 		if (enemy_bullets[n].state) { // not inactive
+
 		  float pbx = enemy_bullets[n].x + enemy_bullets[n].xspeed;
 		  float pby = enemy_bullets[n].y + enemy_bullets[n].yspeed;
+
 		  enemy_bullets[n].x = pbx;
 		  enemy_bullets[n].y = pby;
 
@@ -976,8 +979,10 @@ bool boss_direction = true; 	// Indica si el PJ está en estado "focus"
 	  int i = 0;
 	  for (; i < MAX_BULLETS; i++) {
 		if (bulletmask >> i & 1) {
+
 		  float bx     = bullets[i].x + bullets[i].xspeed;
 		  float by     = bullets[i].y + bullets[i].yspeed;
+
 		  bullets[i].x = bx;
 		  bullets[i].y = by;
 
@@ -1045,20 +1050,43 @@ bool boss_direction = true; 	// Indica si el PJ está en estado "focus"
 	
 // }
 
-void level_1(object_2d_info_t* e)
+void level_1(enemy_ship_t* e)
 {
-	
 
 	
-	
-	
-	// if(e->position.x < SCREEN_WIDTH_TOP/2 && e->position.y < SCREEN_HEIGHT_TOP/2 ){
-	// move_enemy_sprite_to(SCREEN_WIDTH_TOP/2, SCREEN_HEIGHT_TOP/2, 10.0f, 1.0f, &boss1_object);
-	// }else{
-		// e->position_velocity.dx = 0;
-		// e->position_velocity.dy = 0;
-	// }
-	
+	if(left && e->xspeed == 0 && !direction_helper)
+	{
+		float rand_x = randomBetween(e->x, 50);
+		float rand_y = randomBetween(80, 140);
+
+		e->xspeed = (rand_x - e->x) / 100;
+		e->yspeed = (rand_y - e->y) / 100;
+
+		left = !left;
+
+		if(e->x > 50 && !direction_helper)
+			direction_helper = !direction_helper;
+
+	}
+	if(!left && e->xspeed == 0 && !direction_helper)
+	{
+		float rand_x = randomBetween(e->x, 350);
+		float rand_y = randomBetween(80, 140);
+
+		e->xspeed = (rand_x - e->x) / 100;
+		e->yspeed = (rand_y - e->y) / 100;
+
+		left = !left;
+
+		if(e->x < 35050 && !direction_helper)
+			direction_helper = !direction_helper;		
+
+	}
+
+	//ARREGLAR ESTO PORFA
+
+	if(e->x < 50 && direction_helper){ e->xspeed = 0; e->yspeed = 0; direction_helper = !direction_helper;}
+	if(e->x > 350 && direction_helper){ e->xspeed = 0; e->yspeed = 0; direction_helper = !direction_helper;}
 	
 }
 
@@ -1101,7 +1129,7 @@ int main(int argc, char* argv[])
 	init_player();
 	Init_BG();
 	
-	enemy_ships[0] = spawn_enemy_ship(200.0f, 120.0f, 0.0f, 0.0f, 30.0f, 4, 20.0f, &boss1_object, &barrier_object);
+	enemy_ships[0] = spawn_enemy_ship(200.0f, 120.0f, 0.0f, 0.0f, 30.0f, 4, 100.0f, &boss1_object, &barrier_object);
 	
 	
 	
@@ -1181,8 +1209,12 @@ int main(int argc, char* argv[])
 			
 		}
 		if (kHeld & KEY_L) {
-			enemy_ships[0].xspeed = -0.7f;
+
 			//player_object.frame_info.loop_once = false; X
+		}
+		if (kHeld & KEY_R) {
+			//enemy_ships[0].xspeed = -0.7f;
+			level_1(&enemy_ships[0]);
 		}
 		if (kHeld & KEY_Y) {
 			focus = true;
@@ -1215,6 +1247,7 @@ int main(int argc, char* argv[])
 		{
 			bullet_logic();
 			enemy_ship_logic();
+			
 		}
 		
 		// Print debug messages on the bottom screen
@@ -1265,13 +1298,14 @@ int main(int argc, char* argv[])
 			
 			// draw_gameover_fade();
 		// }
-	
+
+		
 	
 		draw_bullets();
 		
 		if(!skill){
 			
-			C2D_DrawLine (SCREEN_WIDTH_BOT/2, -SCREEN_HEIGHT_TOP/2, C2D_Color32f(1.0f, 0.0f, 0.1f, 0.5f), 
+			C2D_DrawLine (enemy_ships[0].x-40, -enemy_ships[0].y, C2D_Color32f(1.0f, 0.0f, 0.1f, 0.5f), 
 				player_object.position.x, player_object.position.y, C2D_Color32f(1.0f, 0.0f, 0.1f, 0.5f), 1.0f, 0.0f);
 		}
 		
@@ -1320,7 +1354,7 @@ int main(int argc, char* argv[])
 		if(!skill){
 		draw_sprite_animation(&boss1_object);
 		draw_sprite_animation(&barrier_object);
-		C2D_DrawLine (SCREEN_WIDTH_TOP/2, SCREEN_HEIGHT_TOP/2, C2D_Color32f(1.0f, 0.0f, 0.1f, 0.5f), 
+		C2D_DrawLine (enemy_ships[0].x, enemy_ships[0].y, C2D_Color32f(1.0f, 0.0f, 0.1f, 0.5f), 
 			player_object.position.x + 40.0f, player_object.position.y + 240.0f, C2D_Color32f(1.0f, 0.0f, 0.1f, 0.5f), 1.0f, 0.0f);
 		}
 		if(skill){

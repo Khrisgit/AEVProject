@@ -157,10 +157,9 @@ inline float randomBetween(float min, float max)
 	
 	float rand_float = ((float)rand_int / (float)RAND_MAX) * (max - min) + min;
 	
-    return rand_float;
+  return rand_float;
+
 }
-
-
 
 /* TODO: Since we use STB's sprintf this is probably unneeded and might
  * be deleted soon */

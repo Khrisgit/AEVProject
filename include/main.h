@@ -194,6 +194,56 @@ typedef struct enemy_ship_t {
   C2D_Sprite *sprite;
 } bullet_t;
 
+	typedef struct bullet_enemy {  // BULLET OBJ
+    union {
+    struct {            // posicion
+      float x;
+      float y;
+    };
+    vec2f pos;
+    float p[1];
+  };
+
+    union {
+    struct {           // velocidad
+      float xspeed; 
+      float yspeed;
+    };
+    vec2f speed;
+    float s[1];
+  };
+  bool top_screen;    // esta en pant. superior ?
+  bool dup;           // esta duplicado ?
+  float angle;        // angulo
+  int state;          // estado
+  C2D_Sprite *sprite; // sprite asociado
+} bullet_enemy;
+
+	typedef struct barrage_enemy {  // BULLET OBJ
+    union {
+    struct {                  // posicion
+      float x;
+      float y;
+    };
+    vec2f pos;
+    float p[1];
+  };
+
+    union {
+    struct {                // velocidad
+      float xspeed; 
+      float yspeed;
+    };
+    vec2f speed;
+    float s[1];
+  };
+  bool top_screen;          // esta en pant. superior ?
+  bool dup;                 // esta duplicado ?
+  float angle;              // angulo
+  int state;                // estado
+  C2D_Sprite *sprite;       // sprite asociado
+  bullet_enemy *bullet;     // proyectil enemigo
+} barrage_enemy;
 
 inline int inside_top_screen(float x, float y)
 {
