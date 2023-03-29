@@ -12,3 +12,4 @@
 #define sprites_bullet_5_idx 8
 #define sprites_UI_idx 9
 #define sprites_bg_space_idx 10
+#define sprites_laser_yellow_idx 11

@@ -18,6 +18,7 @@
 #include "system_math.h"
 #include "main_debug.h"
 
+#define MAX_MINIONS              50
 #define MAX_BOSSES               5
 #define MAX_SPRITES   			 300
 #define MAX_BULLETS   			 30
@@ -167,6 +168,39 @@ typedef struct enemy_ship_t {
   unsigned int curr_sprite;
 } enemy_ship_t;
 
+typedef struct minion {
+
+  float health;
+  float current_health;
+
+  union {
+    struct {
+      float x;
+      float y;
+    };
+    vec2f pos;
+    float p[1];
+  };
+  
+  union {
+    struct {
+      float xspeed;
+      float yspeed;
+    };
+    vec2f speed;
+    float s[1];
+  };
+  
+  float angle;
+  float radius;
+  
+  bool invencible;
+  enemy_state_t state;
+  //loot_table_t loot_table;
+  object_2d_info_t* enemy_spr;
+  
+} minion;
+
 	typedef struct bullet_t {  // BULLET OBJ
     union {
     struct {
@@ -218,6 +252,35 @@ typedef struct enemy_ship_t {
   int state;          // estado
   C2D_Sprite *sprite; // sprite asociado
 } bullet_enemy;
+
+typedef struct laser {  // BULLET OBJ
+    union {
+    struct {            // posicion
+      float x;
+      float y;
+    };
+    vec2f pos;
+    float p[1];
+  };
+
+    union {
+    struct {           // velocidad
+      float xspeed; 
+      float yspeed;
+    };
+    vec2f speed;
+    float s[1];
+  };
+  bool bot_screen;    // esta en pant. superior ?
+  bool rot_horaria;    // esta en pant. superior ?
+  bool dup;           // esta duplicado ?
+  float max_scale;
+  float rotation_speed;
+  float spd;
+  float angle;        // angulo
+  int state;          // estado
+  C2D_Sprite *sprite; // sprite asociado
+} laser;
 
 	typedef struct barrage_enemy {  // BULLET OBJ
     union {
