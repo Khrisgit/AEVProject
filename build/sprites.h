@@ -13,3 +13,6 @@
 #define sprites_UI_idx 9
 #define sprites_bg_space_idx 10
 #define sprites_laser_yellow_idx 11
+#define sprites_hitbox_idx 12
+#define sprites_star_1_idx 13
+#define sprites_star_mini_2_idx 14

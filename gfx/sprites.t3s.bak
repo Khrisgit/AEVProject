@@ -1,0 +1,14 @@
+--atlas -f rgba8888 -z auto
+player_shot.png
+bullet_1.png
+bullet_2.png
+bgintop.png
+bginbot.png
+bgout.png
+bullet_3.png
+bullet_4.png
+bullet_5.png
+UI.png
+bg_space.png
+laser_yellow.png
+hitbox.png

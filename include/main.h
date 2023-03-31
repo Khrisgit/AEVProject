@@ -246,9 +246,13 @@ typedef struct minion {
     vec2f speed;
     float s[1];
   };
-  bool top_screen;    // esta en pant. superior ?
+  float spd;        // angulo
+  bool bot_screen;    // esta en pant. superior ?
   bool dup;           // esta duplicado ?
+  float radius;
   float angle;        // angulo
+  float rotation_spd;        // angulo
+  float sprite_angle;        // angulo
   int state;          // estado
   C2D_Sprite *sprite; // sprite asociado
 } bullet_enemy;

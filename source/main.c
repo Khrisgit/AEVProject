@@ -78,20 +78,57 @@ minion      	  minions[MAX_BOSSES];
 u32 bulletmask;
 
 bullet_t          bullets[MAX_BULLETS];
-bullet_t          enemy_bullets[MAX_ENEMY_BULLETS];
+bullet_enemy          enemy_bullets[MAX_ENEMY_BULLETS];
 laser          	  enemy_lasers[MAX_ENEMY_BULLETS];
 
+C2D_Sprite        hitbox;
 C2D_Sprite        bullet_normal_sprite;
 C2D_Sprite        bullet_normal_sprite2;
 C2D_Sprite        blue_plasma_mid_ball;
 C2D_Sprite        yellow_mid_ball;
 C2D_Sprite        laser_yellow;
 C2D_Sprite        red_big_ball;
+C2D_Sprite        star_yellow;
+C2D_Sprite        star_mini_red;
 C2D_Sprite        enemy_sprites[SPRITE_ENEMY_TOTAL];
 
 C2D_Sprite        UI;
 
 // Atributos de control. 
+
+u32 			currentTime_1;
+u32 currentTime_2;
+u32 currentTime_3;
+u32 currentTime_4;
+u32 currentTime_5;
+u32 currentTime_6;
+u32 currentTime_7;
+u32 currentTime_8;
+u32 currentTime_9;
+u32 currentTime_10;
+//u32 currentTime_aux = osGetTime();
+
+u32 lastPrintTime_1 = 0;
+u32 lastPrintTime_2 = 0;
+u32 lastPrintTime_3 = 0;
+u32 lastPrintTime_4 = 0;
+u32 lastPrintTime_5 = 0;
+u32 lastPrintTime_6 = 0;
+u32 lastPrintTime_7 = 0;
+u32 lastPrintTime_8 = 0;
+u32 lastPrintTime_9 = 0;
+u32 lastPrintTime_10 = 0;
+
+float level_angle_1;
+float level_angle_2;
+float level_angle_3;
+float level_angle_4;
+float level_angle_5;
+float level_angle_6;
+float level_angle_7;
+float level_angle_8;
+float level_angle_9;
+float level_angle_10;
 
 static bool focus = false; 	// Indica si el PJ está en estado "focus" 
 static bool focus_helper = false; 	// Indica si el PJ está en estado "focus" 
@@ -113,6 +150,7 @@ bool rotacionFondo_top = true;
 bool rotacionFondo_bottom = true;	
 bool direction_helper = false; 	// Indica si el PJ está en estado "focus" 
 bool left = true;
+bool shots = false;
 
 
 	void init_player()
@@ -198,26 +236,32 @@ bool left = true;
 		player.player_spr = &player_object;
 		player.orb_spr = &orb_object;
 		
-		// enemy_ships[0].enemy_spr = &boss1_object;
-		// enemy_ships[0].barrier_spr = &barrier_object;
-		
+		C2D_SpriteFromSheet(&hitbox, general_spritesheet, 12);
 		C2D_SpriteFromSheet(&bullet_normal_sprite, general_spritesheet, 0);
 		C2D_SpriteFromSheet(&bullet_normal_sprite2, general_spritesheet, 2);
 		C2D_SpriteFromSheet(&blue_plasma_mid_ball, general_spritesheet, 6);
 		C2D_SpriteFromSheet(&yellow_mid_ball, general_spritesheet, 7);
 		C2D_SpriteFromSheet(&red_big_ball, general_spritesheet, 8);
 		C2D_SpriteFromSheet(&laser_yellow, general_spritesheet, 11);
-		
+		C2D_SpriteFromSheet(&star_yellow, general_spritesheet, 13);
+		C2D_SpriteFromSheet(&star_mini_red, general_spritesheet, 14);
+
 		C2D_SpriteFromSheet(&UI, general_spritesheet, 9);
 		C2D_SpriteSetCenter(&UI, 0.5f, 0.5f);
 		C2D_SpriteSetPos(&UI, SCREEN_WIDTH_TOP/2, SCREEN_HEIGHT_TOP/2);
+
+		C2D_SpriteSetRotation(&star_yellow, 1.5f);
 		
+		C2D_SpriteSetCenter(&hitbox, 0.5f, 0.5f);
 		C2D_SpriteSetCenter(&bullet_normal_sprite, 0.5f, 0.5f);
 		C2D_SpriteSetCenter(&bullet_normal_sprite2, 0.5f, 0.5f);
 		C2D_SpriteSetCenter(&blue_plasma_mid_ball, 0.5f, 0.5f);
 		C2D_SpriteSetCenter(&yellow_mid_ball, 0.5f, 0.5f);
 		C2D_SpriteSetCenter(&laser_yellow, 0.45f, 0.0f);
 		C2D_SpriteSetCenter(&red_big_ball, 0.5f, 0.5f);
+		C2D_SpriteSetCenter(&star_mini_red, 0.5f, 0.5f);
+		C2D_SpriteSetCenter(&star_yellow, 0.5f, 0.5f);
+		
 		
 		
 		
@@ -271,8 +315,8 @@ bool left = true;
 		} 
 		else // poner velocidades tipo 2, 4, 5...  3 NO
 		{ 
-			fondo1->dy = 2.0f; 
-			fondo2->dy = 2.0f; 
+			fondo1->dy = 4.0f; 
+			fondo2->dy = 4.0f; 
 		}
 		
 		
@@ -337,17 +381,17 @@ bool left = true;
 	
 
 	
-	void draw_bullets(void){
+	void draw_bullets_bot(void){
 
 	  for (int j = 0; j < MAX_ENEMY_BULLETS; ++j) {
 		if (enemy_bullets[j].state) { // not inactive
 			if(enemy_bullets[j].bot_screen == true){
 			  C2D_SpriteSetPos(enemy_bullets[j].sprite, enemy_bullets[j].x, enemy_bullets[j].y);
-			  C2D_SpriteSetRotation(enemy_bullets[j].sprite, deg_to_rad(-enemy_bullets[j].angle+90));
+			  C2D_SpriteSetRotation(enemy_bullets[j].sprite, deg_to_rad(-enemy_bullets[j].sprite_angle+90));
 			  C2D_DrawSprite(enemy_bullets[j].sprite);
 			}
 		}
-	}
+	  }
 	  
 	  int i = 0;
 	    for (; i < MAX_BULLETS; i++) {
@@ -358,8 +402,6 @@ bool left = true;
 				}
 	        }  
 	    }
-	  
-	  
 	}
 	
 	void draw_bullets_top(void){
@@ -368,7 +410,7 @@ bool left = true;
 		if (enemy_bullets[j].state) { // not inactive
 			if(enemy_bullets[j].bot_screen == false){
 			  C2D_SpriteSetPos(enemy_bullets[j].sprite, enemy_bullets[j].x, enemy_bullets[j].y);
-			  C2D_SpriteSetRotation(enemy_bullets[j].sprite, deg_to_rad(-enemy_bullets[j].angle+90));
+			  C2D_SpriteSetRotation(enemy_bullets[j].sprite, deg_to_rad(-enemy_bullets[j].sprite_angle+90));
 			  C2D_DrawSprite(enemy_bullets[j].sprite);
 			}
 		}
@@ -414,7 +456,13 @@ bool left = true;
 		}	
 	}
 
-	
+	void draw_hitbox(void)
+	{
+
+		C2D_SpriteSetPos(&hitbox, player.x, player.y);
+		C2D_DrawSprite(&hitbox);
+
+	}
 	
 	
 	/*
@@ -889,8 +937,8 @@ bool left = true;
 	  bullets[i].dup = false;
 	}
 	
-	void shoot_enemy_bullet_aim(float x, float y, float speed, float radius, C2D_Sprite *sprite, bool bot)
-	{
+	void shoot_enemy_bullet_aim(float x, float y, float speed, float radius, C2D_Sprite *sprite, bool bot){
+	  
 	  int i = 0;
 	  for (; i < MAX_ENEMY_BULLETS; ++i) {
 			if (!enemy_bullets[i].state) { // inactive, free to use slot
@@ -929,18 +977,19 @@ bool left = true;
 		}
 	}
 	
-	void shoot_enemy_bullet(float x, float y, float angle, float speed, float radius, C2D_Sprite *sprite, bool bot)
+	void shoot_enemy_bullet(float x, float y, float angle, float speed, float rotation_spd, float radius, C2D_Sprite *sprite, bool bot)
 	{
+
 	  int i = 0;
-	  for (; i < MAX_ENEMY_BULLETS; ++i) {
+	  for (; i < MAX_ENEMY_BULLETS/2; ++i) {
 			if (!enemy_bullets[i].state) { // inactive, free to use slot
 			  
 				if(!bot){
 				   enemy_bullets[i].x = x;
 				   enemy_bullets[i].y = y;
 			    }else{
-				  enemy_bullets[i].x = x - 40;
-				  enemy_bullets[i].y = y;				  
+				  enemy_bullets[i].x = x + 40;
+				  enemy_bullets[i].y = y + 240;				  
 			    }
 			  
 			  enemy_bullets[i].bot_screen = bot;
@@ -949,15 +998,51 @@ bool left = true;
 			  enemy_bullets[i].angle = angle;
 			  
 			  enemy_bullets[i].spd = speed;
+			  enemy_bullets[i].rotation_spd = rotation_spd;
 			  
 			  enemy_bullets[i].xspeed = speed * cosf(deg_to_rad(-angle));
 			  enemy_bullets[i].yspeed = speed * sinf(deg_to_rad(-angle));
 
 			  enemy_bullets[i].sprite = sprite;
+			  enemy_bullets[i].sprite_angle = angle;
 			  
 			  enemy_bullets[i].state = BULLET_STATE_ACTIVE;
 			  
 			  enemy_bullets[i].dup = false;
+			 
+			  break;
+			}	
+		}
+
+		int j = MAX_ENEMY_BULLETS/2;
+		for (; j < MAX_ENEMY_BULLETS; ++j) {
+			if (!enemy_bullets[j].state) { // inactive, free to use slot
+			  
+				if(!bot){
+				   enemy_bullets[j].x = x - 40;
+				   enemy_bullets[j].y = y - 240;
+			    }else{
+				  enemy_bullets[j].x = x;
+				  enemy_bullets[j].y = y;				  
+				}
+			  
+			  enemy_bullets[j].bot_screen = !bot;
+			  
+			  enemy_bullets[j].radius = radius;
+			  enemy_bullets[j].angle = angle;
+			  
+			  enemy_bullets[j].spd = speed;
+			  enemy_bullets[j].rotation_spd = rotation_spd;
+			  
+			  enemy_bullets[j].xspeed = speed * cosf(deg_to_rad(-angle));
+			  enemy_bullets[j].yspeed = speed * sinf(deg_to_rad(-angle));
+
+			  enemy_bullets[j].sprite = sprite;
+			  enemy_bullets[j].sprite_angle = angle;
+			  
+			  enemy_bullets[j].state = BULLET_STATE_ACTIVE;
+			  
+			  enemy_bullets[j].dup = false;
 			 
 			  break;
 			}	
@@ -985,6 +1070,7 @@ bool left = true;
 			  enemy_bullets[i].angle = angle;
 			  
 			  enemy_bullets[i].spd = speed;
+			  //enemy_bullets[i].rotation_spd = rotation_spd;
 			  
 			  enemy_bullets[i].xspeed = speed * cosf(deg_to_rad(-angle));
 			  enemy_bullets[i].yspeed = speed * sinf(deg_to_rad(-angle));
@@ -998,22 +1084,22 @@ bool left = true;
 		}
 	}
 		
-	void burst(float x, float y, float speed, float radius, int total_bullets, C2D_Sprite *sprite, bool bot)
+	void burst(float x, float y, float angle, float speed, float rotation_spd, float radius, int total_bullets, C2D_Sprite *sprite, bool bot)
 	{
 	  int i = 0;
 	  for (; i < total_bullets; ++i) {
 			//u32 currentTime = osGetTime();
 			//if (currentTime - lastPrintTime >= time) {
 			//lastPrintTime = currentTime;
-			shoot_enemy_bullet(x, y, (360/total_bullets) * i, speed, radius, sprite, bot );
+			shoot_enemy_bullet(x, y, (360/total_bullets) * i + angle, speed, rotation_spd, radius, sprite, bot );
 			
         }
 	}
 	
-	void burst_aim(float x, float y, float speed, float radius, int total_bullets, C2D_Sprite *sprite, bool bot)
+	void burst_aim(float x, float y, float speed, float rotation_spd, float radius, int total_bullets, C2D_Sprite *sprite, bool bot)
 	{
 		
-	float dx, dy, a;
+		float dx, dy, a;
 			  
 		if(bot){
 			dx = player_object.position.x - x;
@@ -1027,10 +1113,8 @@ bool left = true;
 		
 	  int i = 0;
 	  for (; i < total_bullets; ++i) {
-			//u32 currentTime = osGetTime();
-			//if (currentTime - lastPrintTime >= time) {
-			//lastPrintTime = currentTime;
-			shoot_enemy_bullet(x, y, ((360)/total_bullets) * i - rad_to_deg(a), speed, radius, sprite, bot );
+
+			shoot_enemy_bullet(x, y, ((360)/total_bullets) * i - rad_to_deg(a), speed, rotation_spd, radius, sprite, bot );
 			
         }
 	}
@@ -1041,11 +1125,23 @@ bool left = true;
 	  for (int n = 0; n < MAX_ENEMY_BULLETS; ++n) {
 		if (enemy_bullets[n].state) { // not inactive
 
-		  float pbx = enemy_bullets[n].x + enemy_bullets[n].xspeed;
-		  float pby = enemy_bullets[n].y + enemy_bullets[n].yspeed;
+			float pbx;
+			float pby;
+
+
+			
+				pbx = enemy_bullets[n].x + enemy_bullets[n].xspeed;
+		  		pby = enemy_bullets[n].y + enemy_bullets[n].yspeed;
+			
+
+		  
+		  
 
 		  enemy_bullets[n].x = pbx;
 		  enemy_bullets[n].y = pby;
+
+		  enemy_bullets[n].sprite_angle +=  enemy_bullets[n].rotation_spd;
+		  //C2D_SpriteSetRotationDegrees(enemy_bullets[n].sprite, enemy_bullets[n].sprite_angle);
 
 		  /* Check collision with player */
 		  // if (inside_circle(sbx, sby, player.x, player.y, player.radius) &&
@@ -1062,34 +1158,16 @@ bool left = true;
 		  }
 		  /* Disable bullet if it went offscreen */
 		  
-		  if (enemy_bullets[n].y > 245 && enemy_bullets[n].bot_screen == false && enemy_bullets[n].dup == false) 
-		  {
-			
-			change_enemy_bullet(enemy_bullets[n].x, 0, enemy_bullets[n].angle,
-				enemy_bullets[n].spd, enemy_bullets[n].radius, enemy_bullets[n].sprite, true );
-							
-			enemy_bullets[n].dup = true;
-		  }
-		  if (enemy_bullets[n].y < -5 && enemy_bullets[n].bot_screen == true && enemy_bullets[n].dup == false) 
-		  {
-			  
-			change_enemy_bullet(enemy_bullets[n].x+40, 240, enemy_bullets[n].angle,
-				enemy_bullets[n].spd, enemy_bullets[n].radius, enemy_bullets[n].sprite, false );
-				
-			enemy_bullets[n].dup = true;
-		  }
 		  
-		  if(!inside_rect(enemy_bullets[n].x, enemy_bullets[n].y,
-				-20, SCREEN_WIDTH_TOP+20, -20, SCREEN_HEIGHT_TOP+20) 
-				&& enemy_bullets[n].bot_screen == false)
+		  if(!inside_rect(enemy_bullets[n].x, enemy_bullets[n].y, -100, 500, -100, 600) 
+				&& enemy_bullets[n].bot_screen == false) // TOP
 		    {
 			  enemy_bullets[n].state = BULLET_STATE_INACTIVE;
 			  //dead = true;
 		    }
 		  
-		  if(!inside_rect(enemy_bullets[n].x, enemy_bullets[n].y,
-				 -20, SCREEN_WIDTH_BOT+20, -20, SCREEN_HEIGHT_BOT+20) 
-				 && enemy_bullets[n].bot_screen == true)
+		  if(!inside_rect(enemy_bullets[n].x, enemy_bullets[n].y, -100, 500, -400, 300) 
+				 && enemy_bullets[n].bot_screen == true) // BOT
 		    {
 			   enemy_bullets[n].state = BULLET_STATE_INACTIVE;
 		    }
@@ -1224,7 +1302,7 @@ void level_1(enemy_ship_t* e)
 
 		left = !left;
 
-		if(e->x < 35050 && !direction_helper)
+		if(e->x < 40 && !direction_helper)
 			direction_helper = !direction_helper;		
 
 	}
@@ -1234,6 +1312,18 @@ void level_1(enemy_ship_t* e)
 	if(e->x < 50 && direction_helper){ e->xspeed = 0; e->yspeed = 0; direction_helper = !direction_helper;}
 	if(e->x > 350 && direction_helper){ e->xspeed = 0; e->yspeed = 0; direction_helper = !direction_helper;}
 	
+}
+
+void shoting(void)
+{
+	u32 currentTime_2 = osGetTime();
+        if (currentTime_2 - lastPrintTime_2 >= 350) {
+            lastPrintTime_2 = currentTime_2;
+			burst(SCREEN_WIDTH_TOP/2, SCREEN_HEIGHT_TOP/2, level_angle_1, 3.0f, 2.0f, 10.0f, 21, &star_yellow, false);
+			level_angle_1 += 2.0f;
+		}
+	
+
 }
 
 void shot_laser(float x, float y, float angle, float max_scale, 
@@ -1361,13 +1451,16 @@ int main(int argc, char* argv[])
 			 //shoot_enemy_bullet(200.0f, 100.0f, 90.0f, 2.0f, 2.0f, &bullet_normal_sprite2, true);
 			 
 			 //burst_aim(200.0f, 100.0f, 1.8f, 25.0f, 7, &red_big_ball, false);
-			 burst_aim(SCREEN_WIDTH_TOP/2, SCREEN_HEIGHT_TOP/2, 2.5f, 12.5f, 30, &yellow_mid_ball, false);
 			 
-			 
+			 shots = !shots;
+			 level_angle_1 = 10.0f;
 			 
             }
 			
         }
+
+		if(shots && !skill)
+		shoting();
 		
 		if (kDown & KEY_B) 
 		{
@@ -1434,6 +1527,8 @@ int main(int argc, char* argv[])
 			enemy_ship_logic();
 			
 		}
+
+		
 		
 		// Print debug messages on the bottom screen
 		// printf("\x1b[2;1HCPU:     %6.2f%%\x1b[K", C3D_GetProcessingTime()*6.0f);
@@ -1486,7 +1581,11 @@ int main(int argc, char* argv[])
 
 		
 		draw_lasers_bot();
-		draw_bullets();
+		draw_bullets_bot();
+
+		if(focus)
+			draw_hitbox();
+
 		
 		
 		if(!skill){
@@ -1504,7 +1603,7 @@ int main(int argc, char* argv[])
 			if(ts_radius > 0){
 			
 				C2D_DrawCircleSolid(player_object.position.x , player_object.position.y, 0, ts_radius, 
-					C2D_Color32f(1.0f, 0.0f, 0.0f, 0.15f));
+					C2D_Color32f(1.0f, 0.0f, 0.0f, 0.2f));
 					
 				ts_radius -= 15.0f;
 				 
@@ -1560,7 +1659,7 @@ int main(int argc, char* argv[])
 			if(ts_radius > 0){
 			
 				C2D_DrawCircleSolid(player_object.position.x + 40.0f, player_object.position.y + 240.0f, 0, ts_radius, 
-					C2D_Color32f(1.0f, 0.0f, 0.0f, 0.15f));
+					C2D_Color32f(1.0f, 0.0f, 0.0f, 0.2f));
 					
 				ts_radius -= 22.0f;
 				 
