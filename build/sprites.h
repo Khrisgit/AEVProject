@@ -14,5 +14,13 @@
 #define sprites_bg_space_idx 10
 #define sprites_laser_yellow_idx 11
 #define sprites_hitbox_idx 12
-#define sprites_star_1_idx 13
+#define sprites_star_yellow_idx 13
 #define sprites_star_mini_2_idx 14
+#define sprites_star_blue_idx 15
+#define sprites_orb_green_idx 16
+#define sprites_score_point_idx 17
+#define sprites_bullet_yellow_idx 18
+#define sprites_bullet_orange_idx 19
+#define sprites_bullet_red_idx 20
+#define sprites_shell_red_idx 21
+#define sprites_orb_player_idx 22

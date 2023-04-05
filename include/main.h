@@ -20,8 +20,8 @@
 
 #define MAX_MINIONS              50
 #define MAX_BOSSES               5
-#define MAX_SPRITES   			 300
-#define MAX_BULLETS   			 30
+#define MAX_SPRITES   			     300
+#define MAX_BULLETS   			     300
 #define MAX_ENEMY_BULLETS        5000
 #define MAX_ENEMY_SHIPS          32
 
@@ -50,7 +50,9 @@
 #define ANIMATION_REFRESH_TIME_MIN  17
 
 #define PLAYER_HP_START  5
-#define BULLET_INITIAL_SPEED      10
+#define BULLET_INITIAL_SPEED      15
+#define PLAYER_BULLET_MS          120
+#define PLAYER_BULLET_MS_POWERUP  100
 
 #define GRACE_PERIOD_AFTER_HIT    120
 
@@ -59,6 +61,12 @@ typedef enum {
               ENEMY_STATE_ACTIVE,         // 1
               ENEMY_STATE_TOTAL           // 2
 } enemy_state_t;
+
+typedef enum {
+              ORB_STATE_INACTIVE,       // 0 
+              ORB_STATE_ACTIVE,         // 1
+              ORB_STATE_TOTAL           // 2
+} orb_state_t;
 
 typedef enum {
               PICKUP_STATE_INACTIVE,       // 0 
@@ -85,7 +93,30 @@ typedef enum {
               SPRITE_ENEMY_TOTAL          // 2
 } enemy_spritesheet_idx_t;
 
+typedef struct orb_obj {
+    union {
+    struct {
+      float x;
+      float y;
+    };
+    vec2f pos;
+    float p[1];
+  };
+  
+  union {
+    struct {
+      float xspeed;
+      float yspeed;
+    };
+    vec2f speed;
+    float s[1];
+  };
+  
+  orb_state_t state;
 
+  C2D_Sprite *spr;
+
+} orb_obj;
 
 typedef struct player_str {  // PLAYER OBJ
   union {
@@ -105,12 +136,19 @@ typedef struct player_str {  // PLAYER OBJ
     vec2f speed;
     float s[1];
   };
+
   object_2d_info_t* player_spr;
-  object_2d_info_t* orb_spr;
+
   float radius;
-  float power;  
+  
   int health;
+
   int orbs;
+  float power; 
+
+  int skills;
+  float skill_power; 
+
   u32 effects;
   u32 color;
   union {
@@ -122,6 +160,9 @@ typedef struct player_str {  // PLAYER OBJ
     float vertices[XY_TOTAL]; // relative to local coordinates
   };
 } player_str;
+
+
+
 
 typedef struct enemy_ship_t {
     union {
@@ -201,7 +242,7 @@ typedef struct minion {
   
 } minion;
 
-	typedef struct bullet_t {  // BULLET OBJ
+typedef struct bullet_t {  // BULLET OBJ
     union {
     struct {
       float x;
@@ -221,14 +262,14 @@ typedef struct minion {
   };
   float spd;
   bool bot_screen;
-  bool dup;
+  bool aim;
   float radius;
   float angle;
   int state;
   C2D_Sprite *sprite;
 } bullet_t;
 
-	typedef struct bullet_enemy {  // BULLET OBJ
+typedef struct bullet_enemy {  // BULLET OBJ
     union {
     struct {            // posicion
       float x;
@@ -286,7 +327,7 @@ typedef struct laser {  // BULLET OBJ
   C2D_Sprite *sprite; // sprite asociado
 } laser;
 
-	typedef struct barrage_enemy {  // BULLET OBJ
+typedef struct barrage_enemy {  // BULLET OBJ
     union {
     struct {                  // posicion
       float x;
