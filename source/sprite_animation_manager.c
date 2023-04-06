@@ -96,9 +96,15 @@ void draw_sprite_animation(object_2d_info_t* object)
         // Update next sprite
         if (object->frame_info.loop_once == false) {
             object->frame_info.current_frame_index = (object->frame_info.current_frame_index + 1) % object->frame_info.num_of_sprites;
-        } else {
+        } 
+        else 
+        {
             if (object->frame_info.current_frame_index < object->frame_info.num_of_sprites - 1) {
                 object->frame_info.current_frame_index++;
+            }
+            else
+            {
+                //deinitialize_object(object);
             }
         }
         object->refresh_info.start = osGetTime();
