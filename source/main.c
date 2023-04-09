@@ -8,7 +8,7 @@ object_2d_info_t			boss1_object;
 object_2d_info_t			boss1_izq_object; 
 object_2d_info_t			hit_object;
 object_2d_info_t 			player_object;
-object_2d_info_t 			player_shot_impact_obj; 
+object_2d_info_t 			player_shot_impact_obj[300]; 
 object_2d_info_t			robot_1_obj; 
 
 C2D_Sprite					barrier_sprite[11];
@@ -75,7 +75,6 @@ player_str 		  player;
 orb_obj      	  player_orbs[4];
 enemy_ship_t      enemy_ships[MAX_BOSSES];
 minion      	  minions[MAX_BOSSES];
-object_2d_info_t  shot_impacts[MAX_SPRITES];
 
 u32 			  bulletmask;
 
@@ -221,8 +220,8 @@ void init_player(){
 						barrier_rotation_speed, \
 						barrier_refresh_ms_time, \
 						false);
-						  
-	initialize_object(&player_shot_impact_obj, \
+for(int a = 0; a < MAX_BULLETS; a++){ 
+	initialize_object(&player_shot_impact_obj[a], \
 						player_shot_impact_sprite,	\
 						"romfs:/gfx/impact_shot.t3x", \
 						player_shot_impact_pivot, \
@@ -231,7 +230,7 @@ void init_player(){
 						player_shot_impact_rotation_speed, \
 						player_shot_impact_refresh_ms_time, \
 						true);
-						  
+}  
 	initialize_object(&robot_1_obj, \
 						robot_1_spr,	\
 						"romfs:/gfx/robot_1.t3x", \
@@ -291,12 +290,6 @@ void init_player(){
 	C2D_SpriteSetCenter(&star_mini_red, 0.5f, 0.5f);
 	C2D_SpriteSetCenter(&star_yellow, 0.5f, 0.5f);
 	C2D_SpriteSetCenter(&star_blue, 0.5f, 0.5f);
-
-	int i = 0;
-	for (; i < 10; ++i) {
-
-		shot_impacts[i] = player_shot_impact_obj;
-	}
 
 	int j = 0;
 	for (; j < 4; ++j) {
@@ -393,18 +386,18 @@ void rotacionDelFondo(Sprite* fondo1, Sprite* fondo2, float img_size, bool botto
 
 }
 	
-void draw_impact(object_2d_info_t[]* s){
+void draw_impact(object_2d_info_t *s[]){
 
-	 int i = 0;
-	 for (; i < 10; i++) {
-	 	
-		s[i].position.y += 10;
-		s[i].position.x += 10;
+
+	 	int i = 0;
+	for (; i < MAX_BULLETS; i++) {
+		s[i]->position.y += 1*i;
+		s[i]->position.x += 1*i;
 		
-		draw_sprite_animation(&s[i]);
-				
+		draw_sprite_animation(s[i]);
+	}	
 
-	 }
+	 
 
 
 	
@@ -963,7 +956,7 @@ void draw_boss_pos_bar(void){
 
 	for (int n = 0; n < MAX_BOSSES; n++) {
 
-		C2D_DrawRectSolid(enemy_ships[n].x/2, 240, 0, -20, -10, 
+		C2D_DrawRectSolid(enemy_ships[n].x - 20, 240, 0, -20, -10, 
 				C2D_Color32f(0.0f, 1.0f, 0.0f, 1.0f));
 	}
 
@@ -1801,7 +1794,7 @@ int main(int argc, char* argv[]) {
 		
 		update_object(&player_object);
 
-		update_object(&player_shot_impact_obj);
+		update_object(&player_shot_impact_obj[22]);
 		update_object(&boss1_object);
 		
 		update_object(&barrier_object);
@@ -1838,16 +1831,16 @@ int main(int argc, char* argv[]) {
 		draw_lasers_bot();
 		draw_bullets_bot();
 		
-		draw_impact(&player_shot_impact_obj);
+		draw_sprite_animation(&player_shot_impact_obj[22]);
 
 		if(focus)
-			//draw_hitbox();
+			draw_hitbox();
 			
 		
 		
 		if(!skill){
 			
-			C2D_DrawLine (enemy_ships[0].x-40, enemy_ships[0].y - SCREEN_HEIGHT_BOT, C2D_Color32f(1.0f, 0.0f, 0.1f, 0.5f), 
+			C2D_DrawLine(enemy_ships[0].x-40, enemy_ships[0].y - SCREEN_HEIGHT_BOT, C2D_Color32f(1.0f, 0.0f, 0.1f, 0.5f), 
 				player_object.position.x, player_object.position.y, C2D_Color32f(1.0f, 0.0f, 0.1f, 0.5f), 1.0f, 0.0f);
 		}
 		
