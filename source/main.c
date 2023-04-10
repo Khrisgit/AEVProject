@@ -8,6 +8,8 @@ object_2d_info_t			boss1_object;
 object_2d_info_t			boss1_izq_object; 
 object_2d_info_t			hit_object;
 object_2d_info_t 			player_object;
+object_2d_info_t 			player_iz_object;
+object_2d_info_t 			player_der_object;
 object_2d_info_t 			player_shot_impact_obj; 
 object_2d_info_t			robot_1_obj; 
 
@@ -16,9 +18,14 @@ C2D_Sprite 					boss1_sprite[6];
 C2D_Sprite					boss1_izq_sprite[3];
 C2D_Sprite					hit_sprite[5];
 C2D_Sprite 					player_sprite[8];
+C2D_Sprite 					player_iz_sprite[5];
+C2D_Sprite 					player_der_sprite[5];
 C2D_Sprite 					player_shot_impact_sprite[3];
 C2D_Sprite					robot_1_spr[1];
 
+sprite_pivot_t 				common_pivot = {0.5f, 0.5f};
+sprite_pivot_t 				common_r_pivot = {0.35f, 0.5f};
+sprite_pivot_t 				common_l_pivot = {0.65f, 0.5f};
 sprite_pivot_t 				barrier_pivot = {0.5f, 0.5f};
 sprite_pivot_t				boss1_pivot = {0.34f, 0.47f}; 
 sprite_pivot_t				boss1_izq_pivot = {0.34f, 0.47f};
@@ -27,14 +34,16 @@ sprite_pivot_t 				player_pivot = {0.5f, 0.5f};
 sprite_pivot_t 				player_shot_impact_pivot = {0.5f, 0.5f};
 sprite_pivot_t				robot_1_pivot = {0.5f, 0.5f};
 
+sprite_position_t 			common_pos;
 sprite_position_t 			barrier_position = {SCREEN_WIDTH_TOP/2, SCREEN_HEIGHT_TOP/2}; 
-sprite_position_t 			boss1_position = {SCREEN_WIDTH_TOP/2, SCREEN_HEIGHT_TOP/2};
+sprite_position_t 			boss1_pos = {SCREEN_WIDTH_TOP/2, SCREEN_HEIGHT_TOP/2};
 sprite_position_t 			boss1_izq_position;
 sprite_position_t			hit_position;
 sprite_position_t 			player_position = {SCREEN_WIDTH_BOT/2, SCREEN_HEIGHT_BOT/2};
 sprite_position_t 			player_shot_impact_position = {SCREEN_WIDTH_BOT/2, SCREEN_HEIGHT_BOT/2};
 sprite_position_t 			robot_1_pos;
 
+float 						common_rotation = 0.0f;
 float 						barrier_rotation = 0.0f;
 float 						boss1_rotation = 0.0f;
 float 						boss1_izq_rotation = 0.0f;
@@ -43,6 +52,7 @@ float 						player_rotation = 0.0f;
 float 						player_shot_impact_rotation = 0.0f;
 float 						robot_1_rotation = 0.0f;
 
+float 						common_rotation_speed = 0.0f;
 float 						barrier_rotation_speed = 0.0f;
 float 						boss1_rotation_speed = 0.0f;
 float 						boss1_izq_rotation_speed = 0.0f;
@@ -51,6 +61,7 @@ float 						player_rotation_speed = 0.0f;
 float 						player_shot_impact_rotation_speed = 0.0f;
 float 						robot_1_rotation_speed = 0.0f;
 
+uint64_t 					common_refresh_ms_time = 100; 
 uint64_t 					barrier_refresh_ms_time = 100; 
 uint64_t					boss1_refresh_ms_time = 200;
 uint64_t 					boss1_izq_refresh_ms_time = 300;
@@ -101,7 +112,8 @@ C2D_Sprite        star_blue;
 C2D_Sprite        star_mini_red;
 C2D_Sprite        enemy_sprites[SPRITE_ENEMY_TOTAL];
 
-C2D_Sprite        UI;
+C2D_Sprite        UI_bars;
+C2D_Sprite        UI_boss;
 
 // Atributos de control. 
 
@@ -191,12 +203,33 @@ void init_player(){
 						player_rotation_speed, \
 						player_refresh_ms_time, \
 						false);
-						  
+
+	initialize_object(&player_iz_object, \
+						player_iz_sprite,	\
+						"romfs:/gfx/player_iz.t3x", \
+						common_r_pivot, \
+						common_pos, \
+						common_rotation, \
+						common_rotation_speed, \
+						common_refresh_ms_time, \
+						false);
+
+	initialize_object(&player_der_object, \
+						player_der_sprite,	\
+						"romfs:/gfx/player_der.t3x", \
+						common_l_pivot, \
+						common_pos, \
+						common_rotation, \
+						common_rotation_speed, \
+						common_refresh_ms_time, \
+						false);
+
+
 	initialize_object(&boss1_object, \
 						boss1_sprite,	\
 						"romfs:/gfx/Boss-1.t3x", \
 						boss1_pivot, \
-						boss1_position, \
+						boss1_pos, \
 						boss1_rotation, \
 						boss1_rotation_speed, \
 						boss1_refresh_ms_time, \
@@ -269,9 +302,11 @@ void init_player(){
 	C2D_SpriteFromSheet(&star_blue, general_spritesheet, 15);
 	C2D_SpriteFromSheet(&star_mini_red, general_spritesheet, 14);
 
-	C2D_SpriteFromSheet(&UI, general_spritesheet, 9);
-	C2D_SpriteSetCenter(&UI, 0.5f, 0.5f);
-	C2D_SpriteSetPos(&UI, SCREEN_WIDTH_TOP/2, SCREEN_HEIGHT_TOP/2);
+	C2D_SpriteFromSheet(&UI_bars, general_spritesheet, 9);
+	C2D_SpriteSetPos(&UI_bars, 0, 192);
+	C2D_SpriteFromSheet(&UI_boss, general_spritesheet, 25);
+	C2D_SpriteSetCenter(&UI_boss, 1.0f, 0.0f);
+	C2D_SpriteSetPos(&UI_boss, 400, 8);
 
 	C2D_SpriteSetRotation(&star_yellow, 1.5f);
 		
@@ -292,11 +327,7 @@ void init_player(){
 	C2D_SpriteSetCenter(&star_yellow, 0.5f, 0.5f);
 	C2D_SpriteSetCenter(&star_blue, 0.5f, 0.5f);
 
-	int i = 0;
-	for (; i < 10; ++i) {
-
-		shot_impacts[i] = player_shot_impact_obj;
-	}
+	
 
 	int j = 0;
 	for (; j < 4; ++j) {
@@ -393,24 +424,6 @@ void rotacionDelFondo(Sprite* fondo1, Sprite* fondo2, float img_size, bool botto
 
 }
 	
-void draw_impact(object_2d_info_t[]* s){
-
-	 int i = 0;
-	 for (; i < 10; i++) {
-	 	
-		s[i].position.y += 10;
-		s[i].position.x += 10;
-		
-		draw_sprite_animation(&s[i]);
-				
-
-	 }
-
-
-	
-
-}
-	
 void draw_bullets_bot(void){
 
 	int i = 0;
@@ -491,31 +504,6 @@ void draw_hitbox(void){
 	C2D_DrawSprite(&hitbox);
 }
 
-
-	/*
-	void moveSprites()   // Función que mueve cada proyectil (sprite sin animación) lanzado por el PJ.
-	{
-		for (size_t i = 0; i < bullets; i++) // para todos los proyectiles que pueden haber...
-		{
-			Sprite* sprite = &shots[i];	 // agarra el sprite en la pos "i"
-			//Sprite* spriteup = &shotsup[i];
-			// mueve cada sprite a partir de su velocidad
-			C2D_SpriteMove(&sprite->spr, sprite->dx, sprite->dy);
-
-			//if(&sprite->dx, )
-
-
-			//  EN PROGRESO
-			
-			//Comprueba colisiones con los bordes de la pantalla       
-			if ((sprite->spr.params.pos.y < 
-					 ((sprite->spr.params.pos.h / 2.0f) - 50.0f)) && sprite->dy < 0.0f){
-						
-						sprite->pasa = true;
-			}	
-		}
-	}*/
-	
 void orb_movement(){		// Función que determina el movimiento del orbe que gira alrededor del PJ.
 	
 	if(!focus)			// Si el PJ   NO   está "focus" (el orbe debe de girar alrededor del PJ)
@@ -541,9 +529,9 @@ void orb_movement(){		// Función que determina el movimiento del orbe que gira 
 				{
 					// velocidad = punto donde se encuentra
 					player_orbs[i].xspeed =
-					((player_object.position.x + r * cos(t_par[i] * M_PI)) - player_orbs[i].x) / 5;
+					((player.x + r * cos(t_par[i] * M_PI)) - player_orbs[i].x) / 5;
 					player_orbs[i].yspeed =
-					((player_object.position.y - r * sin(t_par[i] * M_PI)) - player_orbs[i].y) / 5;
+					((player.y - r * sin(t_par[i] * M_PI)) - player_orbs[i].y) / 5;
 							
 				}		
 				else  // sino (el orbe se encuentra en el límite de la esfera que debe recorrer)
@@ -553,8 +541,8 @@ void orb_movement(){		// Función que determina el movimiento del orbe que gira 
 					
 
 					focus_helper = false;
-					player_orbs[i].x = player_object.position.x + r * cos(t_par[i] * M_PI);
-					player_orbs[i].y = player_object.position.y - r * sin(t_par[i] * M_PI);
+					player_orbs[i].x = player.x + r * cos(t_par[i] * M_PI);
+					player_orbs[i].y = player.y - r * sin(t_par[i] * M_PI);
 
 				}
 			}
@@ -564,32 +552,24 @@ void orb_movement(){		// Función que determina el movimiento del orbe que gira 
 				{
 					// velocidad = punto donde se encuentra
 					player_orbs[i].xspeed =
-					((player_object.position.x + r * cos(t_impar[i] * M_PI)) - player_orbs[i].x) / 5;
+					((player.x + r * cos(t_impar[i] * M_PI)) - player_orbs[i].x) / 5;
 					player_orbs[i].yspeed =
-					((player_object.position.y - r * sin(t_impar[i] * M_PI)) - player_orbs[i].y) / 5;
+					((player.y - r * sin(t_impar[i] * M_PI)) - player_orbs[i].y) / 5;
 							
 				}		
 				else  // sino (el orbe se encuentra en el límite de la esfera que debe recorrer)
 				{		
-					// posición del orbe = posición del PJ + giro alrededor	
-
-					
 
 					focus_helper = false;
-					player_orbs[i].x = player_object.position.x + r * cos(t_impar[i] * M_PI);
-					player_orbs[i].y = player_object.position.y - r * sin(t_impar[i] * M_PI);
+					player_orbs[i].x = player.x + r * cos(t_impar[i] * M_PI);
+					player_orbs[i].y = player.y - r * sin(t_impar[i] * M_PI);
 
 				}
 			}
-
-			
-
 		}
-
 	}
 	else
 	{
-
 		float x_inpar[] = {0.0f, -15.0f, 15.0f};
 		float x_par[] = {-10.0f, 10.0f, -20.0f, 20.0f};
 
@@ -598,23 +578,23 @@ void orb_movement(){		// Función que determina el movimiento del orbe que gira 
 
 		for(int j = 0; j < 4; j++){
 
-			if(player_orbs[j].x != player_object.position.x &&
-			player_orbs[j].y != player_object.position.y - 20.0f)
+			if(player_orbs[j].x != player.x &&
+			player_orbs[j].y != player.y - 20.0f)
 			{
 
-				if(player.orbs%2 == 0)
+				if(player.orbs % 2 == 0)
 				{
 
 					focus_helper = true;
-					player_orbs[j].xspeed = ((player_object.position.x + x_par[j]) - player_orbs[j].x) / 5;
-					player_orbs[j].yspeed = ((player_object.position.y + y_par[j] - 20.0f) - player_orbs[j].y) / 5;
+					player_orbs[j].xspeed = ((player.x + x_par[j]) - player_orbs[j].x) / 5;
+					player_orbs[j].yspeed = ((player.y + y_par[j] - 20.0f) - player_orbs[j].y) / 5;
 
 				}
 				else
 				{
 					focus_helper = true;
-					player_orbs[j].xspeed = ((player_object.position.x + x_inpar[j]) - player_orbs[j].x) / 5;
-					player_orbs[j].yspeed = ((player_object.position.y + y_inpar[j] - 20.0f) - player_orbs[j].y) / 5;
+					player_orbs[j].xspeed = ((player.x + x_inpar[j]) - player_orbs[j].x) / 5;
+					player_orbs[j].yspeed = ((player.y + y_inpar[j] - 20.0f) - player_orbs[j].y) / 5;
 				}	
 			}
 		}
@@ -661,14 +641,8 @@ void orb_logic(void){
 	int i = 0;
 	for(; i < 4; i++){
 
-		float pox;
-		float poy;
-
-		pox = player_orbs[i].x + player_orbs[i].xspeed;
-		poy = player_orbs[i].y + player_orbs[i].yspeed;
-
-		player_orbs[i].x = pox;
-		player_orbs[i].y = poy;
+		player_orbs[i].x += player_orbs[i].xspeed;
+		player_orbs[i].y += player_orbs[i].yspeed;
 
 		if((i+1) > player.orbs)
 		player_orbs[i].state = ORB_STATE_INACTIVE;
@@ -757,93 +731,112 @@ void player_logic(float x, float y, u32 kHeld){
 	  
 	  /* Apply input sensitivity */
 	  
-	if ((player_object.position.y <= BG_LIMIT_UP_BOT) && (player_object.position_velocity.dy < 0))
+	if ((player.player_spr->position.y <= BG_LIMIT_UP_BOT) && (player.player_spr->position_velocity.dy < 0))
 	{
 		if(!focus)  // si el PJ NO está "focus"
 		{
-			player.xspeed = x/25;				
+			player.xspeed = x/PLAYER_SPEED_DIV;				
 			player.y = BG_LIMIT_UP_BOT;				
-			player_object.position_velocity.dx = x/25;	// velocidad normal del PJ en X (izq y derecha)
-			player_object.position.y = BG_LIMIT_UP_BOT; // posición permanente en ell borde
+			player.player_spr->position_velocity.dx = x/PLAYER_SPEED_DIV;	// velocidad normal del PJ en X (izq y derecha)
+			player.player_spr->position.y = BG_LIMIT_UP_BOT; // posición permanente en ell borde
 		} 
 		else 		// si el PJ SI está "focus"
 		{
-			player.xspeed = x/100;				
+			player.xspeed = x/PLAYER_SPEED_FOCUS_DIV;				
 			player.y = BG_LIMIT_UP_BOT;				
-			player_object.position_velocity.dx = x/100; // velocidad reducida del PJ en X
-			player_object.position.y = BG_LIMIT_UP_BOT; // posición permanente en ell borde
+			player.player_spr->position_velocity.dx = x/PLAYER_SPEED_FOCUS_DIV; // velocidad reducida del PJ en X
+			player.player_spr->position.y = BG_LIMIT_UP_BOT; // posición permanente en ell borde
 		}
 	}
-	if ((player_object.position.y >= BG_LIMIT_DOWN_BOT) && (player_object.position_velocity.dy > 0))
+	if ((player.player_spr->position.y >= BG_LIMIT_DOWN_BOT) && (player.player_spr->position_velocity.dy > 0))
 	{
 		if(!focus)
 		{
-			player.xspeed = x/25;				
+			player.xspeed = x/PLAYER_SPEED_DIV;				
 			player.y = BG_LIMIT_DOWN_BOT;				
-			player_object.position_velocity.dx = x/25;
-			player_object.position.y = BG_LIMIT_DOWN_BOT;
+			player.player_spr->position_velocity.dx = x/PLAYER_SPEED_DIV;
+			player.player_spr->position.y = BG_LIMIT_DOWN_BOT;
 		} 
 		else 
 		{
-			player.xspeed = x/100;				
+			player.xspeed = x/PLAYER_SPEED_FOCUS_DIV;				
 			player.y = BG_LIMIT_DOWN_BOT;
-			player_object.position_velocity.dx = x/100;
-			player_object.position.y = BG_LIMIT_DOWN_BOT;
+			player.player_spr->position_velocity.dx = x/PLAYER_SPEED_FOCUS_DIV;
+			player.player_spr->position.y = BG_LIMIT_DOWN_BOT;
 		}
 	}
-	if ((player_object.position.x <= BG_LIMIT_LEFT_BOT) && (player_object.position_velocity.dx < 0))
+	if ((player.player_spr->position.x <= BG_LIMIT_LEFT_BOT) && (player.player_spr->position_velocity.dx < 0))
 	{
 		if(!focus)
 		{
-			player.yspeed = -y/25;
+			player.yspeed = -y/PLAYER_SPEED_DIV;
 			player.x = BG_LIMIT_LEFT_BOT;				
-			player_object.position_velocity.dy = -y/25;
-			player_object.position.x = BG_LIMIT_LEFT_BOT;
+			player.player_spr->position_velocity.dy = -y/PLAYER_SPEED_DIV;
+			player.player_spr->position.x = BG_LIMIT_LEFT_BOT;
 		} 
 		else 
 		{
-			player.yspeed = -y/100;
+			player.yspeed = -y/PLAYER_SPEED_FOCUS_DIV;
 			player.x = BG_LIMIT_LEFT_BOT;				
-			player_object.position_velocity.dy = -y/100;
-			player_object.position.x = BG_LIMIT_LEFT_BOT;
+			player.player_spr->position_velocity.dy = -y/PLAYER_SPEED_FOCUS_DIV;
+			player.player_spr->position.x = BG_LIMIT_LEFT_BOT;
 		}
 	}
-	if ((player_object.position.x >= BG_LIMIT_RIGHT_BOT) && (player_object.position_velocity.dx > 0))
+	if ((player.player_spr->position.x >= BG_LIMIT_RIGHT_BOT) && (player.player_spr->position_velocity.dx > 0))
 	{
 		if(!focus)
 		{
-			player.yspeed = -y/25;
+			player.yspeed = -y/PLAYER_SPEED_DIV;
 			player.x = BG_LIMIT_RIGHT_BOT;				
-			player_object.position_velocity.dy = -y/25;
-			player_object.position.x = BG_LIMIT_RIGHT_BOT;
+			player.player_spr->position_velocity.dy = -y/PLAYER_SPEED_DIV;
+			player.player_spr->position.x = BG_LIMIT_RIGHT_BOT;
 		} 
 		else 
 		{
-			player.yspeed = -y/100;
+			player.yspeed = -y/PLAYER_SPEED_FOCUS_DIV;
 			player.x = BG_LIMIT_RIGHT_BOT;
-			player_object.position_velocity.dy = -y/100;
-			player_object.position.x = BG_LIMIT_RIGHT_BOT;
+			player.player_spr->position_velocity.dy = -y/PLAYER_SPEED_FOCUS_DIV;
+			player.player_spr->position.x = BG_LIMIT_RIGHT_BOT;
 		}
 	}
 
 	if(!focus)
 	{
 		
-		player.xspeed = x/25;
-		player.yspeed = -y/25;
-		player_object.position_velocity.dx = x/25;
-		player_object.position_velocity.dy = -y/25;		 
+		player.xspeed = x/PLAYER_SPEED_DIV;
+		player.yspeed = -y/PLAYER_SPEED_DIV;
+		player.player_spr->position_velocity.dx = x/PLAYER_SPEED_DIV;
+		player.player_spr->position_velocity.dy = -y/PLAYER_SPEED_DIV;		 
 	} 
 	else 
 	{
-		player.xspeed = x/100;
-		player.yspeed = -y/100;
-		player_object.position_velocity.dx = x/100;
-		player_object.position_velocity.dy = -y/100;			
+		player.xspeed = x/PLAYER_SPEED_FOCUS_DIV;
+		player.yspeed = -y/PLAYER_SPEED_FOCUS_DIV;
+		player.player_spr->position_velocity.dx = x/PLAYER_SPEED_FOCUS_DIV;
+		player.player_spr->position_velocity.dy = -y/PLAYER_SPEED_FOCUS_DIV;			
 	}
 	
 	player.x += player.xspeed;
 	player.y += player.yspeed;
+
+	if(player.xspeed < 0){
+		player_iz_object.position.x = player.x;
+		player_iz_object.position.y = player.y;
+		player.player_spr = &player_iz_object;
+	}
+	
+	if(player.xspeed > 0){
+		player_der_object.position.x = player.x;
+		player_der_object.position.y = player.y;
+		player.player_spr = &player_der_object;
+	}
+
+	if(player.xspeed == 0){
+		player_object.position.x = player.x;
+		player_object.position.y = player.y;
+		player.player_spr = &player_object;
+	}
+	
 
 	orb_movement();
 
@@ -1742,7 +1735,8 @@ int main(int argc, char* argv[]) {
 		}
 		if (kHeld & KEY_R) {
 			//enemy_ships[0].xspeed = -0.7f;
-			level_1(&enemy_ships[0]);
+			//level_1(&enemy_ships[0]);
+			player.player_spr = &player_iz_object;
 		}
 		if (kHeld & KEY_Y) {
 			focus = true;
@@ -1799,7 +1793,8 @@ int main(int argc, char* argv[]) {
 		// Render the scene
 		
 		
-		update_object(&player_object);
+		update_object(player.player_spr);
+		update_object(&player_iz_object);
 
 		update_object(&player_shot_impact_obj);
 		update_object(&boss1_object);
@@ -1826,7 +1821,8 @@ int main(int argc, char* argv[]) {
 		rotacionDelFondo(fondo1_bottom, fondo2_bottom, 600.0f, true);
 		draw_orbs();
 		if(!dead){
-		draw_sprite_animation(&player_object);
+		draw_sprite_animation(player.player_spr);
+		//draw_sprite_animation(&player_iz_object);
 		}
 		
 		// if(dead){
@@ -1838,17 +1834,17 @@ int main(int argc, char* argv[]) {
 		draw_lasers_bot();
 		draw_bullets_bot();
 		
-		draw_impact(&player_shot_impact_obj);
+		
 
 		if(focus)
-			//draw_hitbox();
+			draw_hitbox();
 			
 		
 		
 		if(!skill){
 			
-			C2D_DrawLine (enemy_ships[0].x-40, enemy_ships[0].y - SCREEN_HEIGHT_BOT, C2D_Color32f(1.0f, 0.0f, 0.1f, 0.5f), 
-				player_object.position.x, player_object.position.y, C2D_Color32f(1.0f, 0.0f, 0.1f, 0.5f), 1.0f, 0.0f);
+			C2D_DrawLine(enemy_ships[0].x-40, enemy_ships[0].y - SCREEN_HEIGHT_BOT, C2D_Color32f(1.0f, 0.0f, 0.1f, 0.5f), 
+				player.x, player.y, C2D_Color32f(1.0f, 0.0f, 0.1f, 0.5f), 1.0f, 0.0f);
 		}
 		
 
@@ -1859,8 +1855,8 @@ int main(int argc, char* argv[]) {
 			
 			if(ts_radius > 0){
 			
-				C2D_DrawCircleSolid(player_object.position.x , player_object.position.y, 0, ts_radius, 
-					C2D_Color32f(1.0f, 0.0f, 0.0f, 0.3f));
+				C2D_DrawCircleSolid(player.x , player.y, 0, ts_radius, 
+					C2D_Color32f(1.0f, 0.0f, 0.0f, 0.2f));
 					
 				ts_radius -= 15.0f;
 				 
@@ -1887,27 +1883,23 @@ int main(int argc, char* argv[]) {
 			C2D_DrawSprite(&sprites[i].spr);
 		}
 		rotacionDelFondo(fondo1_top, fondo2_top, 600.0f, false);
-
-		
-
-	
-		
 		
 		if(!skill){
 		draw_sprite_animation(&boss1_object);
 		draw_sprite_animation(&barrier_object);
 		
 		C2D_DrawLine (enemy_ships[0].x, enemy_ships[0].y, C2D_Color32f(1.0f, 0.0f, 0.1f, 0.5f), 
-			player_object.position.x + 40.0f, player_object.position.y + 240.0f, C2D_Color32f(1.0f, 0.0f, 0.1f, 0.5f), 1.0f, 0.0f);
+			player.x + 40.0f, player.y + 240.0f, C2D_Color32f(1.0f, 0.0f, 0.1f, 0.5f), 1.0f, 0.0f);
 		}
 		if(skill){
 		draw_sprite_only(&boss1_object);
 		draw_sprite_only(&barrier_object);
 		}
-		C2D_DrawSprite(&UI);
 		
 		draw_lasers_top();
 		draw_bullets_top();
+
+		
 		
 		if(skill){
 
@@ -1916,8 +1908,8 @@ int main(int argc, char* argv[]) {
 			
 			if(ts_radius > 0){
 			
-				C2D_DrawCircleSolid(player_object.position.x + 40.0f, player_object.position.y + 240.0f, 0, ts_radius, 
-					C2D_Color32f(1.0f, 0.0f, 0.0f, 0.3f));
+				C2D_DrawCircleSolid(player.x + 40.0f, player.y + 240.0f, 0, ts_radius, 
+					C2D_Color32f(1.0f, 0.0f, 0.0f, 0.2f));
 					
 				ts_radius -= 22.0f;
 				 
@@ -1925,15 +1917,16 @@ int main(int argc, char* argv[]) {
 			//skill = !skill;
 		}
 		
-
+		
 		
 		//draw_sprite_animation(&barrier_object);
 		
 
 		
+		C2D_DrawSprite(&UI_bars);
+		C2D_DrawSprite(&UI_boss);
 
-		C2D_DrawRectangle(SCREEN_WIDTH_TOP, 14, 0, -enemy_ships[0].current_health*(250/enemy_ships[0].health), 6, 
-		C2D_Color32f(0.0f, 1.0f, 0.0f, 1.0f), C2D_Color32f(0.0f, 1.0f, 0.0f, 1.0f), C2D_Color32f(0.0f, 1.0f, 0.0f, 1.0f), C2D_Color32f(0.0f, 1.0f, 0.0f, 1.0f));
+		C2D_DrawRectSolid(SCREEN_WIDTH_TOP - 8, 13, 0, -enemy_ships[0].current_health*(230/enemy_ships[0].health), 11, C2D_Color32f(0.0f, 1.0f, 0.0f, 1.0f));
 		
 		
 

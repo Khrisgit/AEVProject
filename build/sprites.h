@@ -10,7 +10,7 @@
 #define sprites_bullet_3_idx 6
 #define sprites_bullet_4_idx 7
 #define sprites_bullet_5_idx 8
-#define sprites_UI_idx 9
+#define sprites_ui_player_idx 9
 #define sprites_bg_space_idx 10
 #define sprites_laser_yellow_idx 11
 #define sprites_hitbox_idx 12
@@ -24,3 +24,6 @@
 #define sprites_bullet_red_idx 20
 #define sprites_shell_red_idx 21
 #define sprites_orb_player_idx 22
+#define sprites_player_hp_idx 23
+#define sprites_player_mp_idx 24
+#define sprites_ui_boss_idx 25

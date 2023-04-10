@@ -8,7 +8,7 @@ bgout.png
 bullet_3.png
 bullet_4.png
 bullet_5.png
-UI.png
+ui_player.png
 bg_space.png
 laser_yellow.png
 hitbox.png
@@ -22,3 +22,6 @@ bullet_orange.png
 bullet_red.png
 shell_red.png
 orb_player.png
+player_hp.png
+player_mp.png
+ui_boss.png
