@@ -1,6 +1,6 @@
 #include "sprite_animation_manager.h"
 
-void initialize_object(object_2d_info_t* object, C2D_Sprite* sprites, const char* filename, const sprite_pivot_t pivot, const sprite_position_t position, const float rotation, const float rotation_velocity, uint64_t animation_refresh_time, bool loop_once)
+void initialize_object(object_2d_info_t* object, C2D_Sprite* sprites, const char* filename, const sprite_pivot_t pivot, const sprite_position_t position, const float rotation, const float rotation_velocity, uint64_t animation_refresh_time, bool loop_once, bool active)
 {
     // Load graphics
     object->spritesheet = C2D_SpriteSheetLoad(filename);
@@ -8,6 +8,8 @@ void initialize_object(object_2d_info_t* object, C2D_Sprite* sprites, const char
     if (object->spritesheet == NULL) {
         svcBreak(USERBREAK_PANIC);
     }
+
+    object->active = active;
     
     // Load sprites
     object->object_sprite = sprites;
@@ -59,8 +61,6 @@ void initialize_object(object_2d_info_t* object, C2D_Sprite* sprites, const char
     }
 }
 
-
-
 void deinitialize_object(object_2d_info_t* object)
 {
     // Free 2D object graphic
@@ -83,42 +83,59 @@ void update_object(object_2d_info_t* object)
     }
 }
 
+void update_objects(object_2d_info_t* object[])
+{
+    for(size_t i = 0; i < (sizeof(&object) / sizeof(object[0])); i++){
+        object[i]->position.x += object[i]->position_velocity.dx;
+        object[i]->position.y += object[i]->position_velocity.dy;
 
+        object[i]->rotation += object[i]->rotation_velocity;
+
+        for (size_t index = 0; index < object[i]->frame_info.num_of_sprites; index++) {
+            // Set the position, and rotation of the object
+            C2D_SpriteSetPos(&object[i]->object_sprite[index], object[i]->position.x, object[i]->position.y);
+            C2D_SpriteSetRotationDegrees(&object[i]->object_sprite[index], object[i]->rotation);
+        }
+    }
+}
 
 void draw_sprite_animation(object_2d_info_t* object)
 {
-    // Get an elapsed time
-    object->refresh_info.stop = osGetTime();
-    object->refresh_info.elapsed = object->refresh_info.stop - object->refresh_info.start;
 
-    // Check the elapsed time which is greater than or equal to the refresh time
-    if (object->refresh_info.elapsed >= object->refresh_info.refresh_time) {
-        // Update next sprite
-        if (object->frame_info.loop_once == false) {
-            object->frame_info.current_frame_index = (object->frame_info.current_frame_index + 1) % object->frame_info.num_of_sprites;
-        } 
-        else 
-        {
-            if (object->frame_info.current_frame_index < object->frame_info.num_of_sprites - 1) {
-                object->frame_info.current_frame_index++;
-            }
-            else
+    if(object->active){
+        // Get an elapsed time
+        object->refresh_info.stop = osGetTime();
+        object->refresh_info.elapsed = object->refresh_info.stop - object->refresh_info.start;
+
+        // Check the elapsed time which is greater than or equal to the refresh time
+        if (object->refresh_info.elapsed >= object->refresh_info.refresh_time) {
+            // Update next sprite
+            if (object->frame_info.loop_once == false) {
+                object->frame_info.current_frame_index = (object->frame_info.current_frame_index + 1) % object->frame_info.num_of_sprites;
+            } 
+            else 
             {
-                //deinitialize_object(object);
+                if (object->frame_info.current_frame_index < object->frame_info.num_of_sprites - 1) {
+                    object->frame_info.current_frame_index++;
+                }
+                else
+                {  
+                object->active = false;
+                }
             }
+            object->refresh_info.start = osGetTime();
+            C2D_DrawSprite(&object->object_sprite[object->frame_info.current_frame_index]);
+        } else {
+            // Draw current sprite
+            C2D_DrawSprite(&object->object_sprite[object->frame_info.current_frame_index]); 
         }
-        object->refresh_info.start = osGetTime();
-        C2D_DrawSprite(&object->object_sprite[object->frame_info.current_frame_index]);
-    } else {
-        // Draw current sprite
-        C2D_DrawSprite(&object->object_sprite[object->frame_info.current_frame_index]);
     }
+    if(!object->active)
+     object->frame_info.current_frame_index = 0; 
 	
 	
 	
 }
-
-
 
 void draw_sprite_only(object_2d_info_t* object)
 {
@@ -128,14 +145,10 @@ void draw_sprite_only(object_2d_info_t* object)
 	
 }
 
-
-
 int get_frame_index(object_2d_info_t* object)
 {
 	return object->frame_info.current_frame_index;
 }
-
-
 
 void reset_frame(object_2d_info_t* object)
 {

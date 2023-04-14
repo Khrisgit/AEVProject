@@ -27,3 +27,5 @@
 #define sprites_player_hp_idx 23
 #define sprites_player_mp_idx 24
 #define sprites_ui_boss_idx 25
+#define sprites_item_frame_idx 26
+#define sprites_player_ts_idx 27

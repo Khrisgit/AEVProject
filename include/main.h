@@ -51,6 +51,14 @@
 
 
 #define PLAYER_HP_START  5
+#define PLAYER_HP_MAX  8
+
+#define PLAYER_SP_START  0
+#define PLAYER_SP_MAX  7
+
+#define PLAYER_TS_START  2
+#define PLAYER_TS_MAX  5
+
 #define PLAYER_SPEED_DIV  35
 #define PLAYER_SPEED_FOCUS_DIV  100
 #define BULLET_INITIAL_SPEED      15
@@ -58,6 +66,15 @@
 #define PLAYER_BULLET_MS_POWERUP  100
 
 #define GRACE_PERIOD_AFTER_HIT    120
+
+typedef enum {
+              GAME_STATE_INTRO,             // 0 
+              GAME_STATE_MANI_MENU,         // 1
+              GAME_STATE_TUTORIAL,          // 2
+              GAME_STATE_GAMEPLAY,          // 3
+              GAME_STATE_LOADING,           // 4
+              GAME_STATE_CREDITS            // 5
+} game_state_t;
 
 typedef enum {
               ENEMY_STATE_INACTIVE,       // 0 
@@ -95,6 +112,7 @@ typedef enum {
               SPRITE_ENEMY_BOOSTING,      // 1
               SPRITE_ENEMY_TOTAL          // 2
 } enemy_spritesheet_idx_t;
+
 
 typedef struct orb_obj {
     union {
@@ -147,6 +165,7 @@ typedef struct player_str {  // PLAYER OBJ
   int health;
 
   int orbs;
+  int orb_energy;
   float power; 
 
   int skills;
@@ -290,15 +309,21 @@ typedef struct bullet_enemy {  // BULLET OBJ
     vec2f speed;
     float s[1];
   };
-  float spd;        // angulo
-  bool bot_screen;    // esta en pant. superior ?
-  bool dup;           // esta duplicado ?
+  float spd;       
+  bool bot_screen; 
+  bool dup;           
   float radius;
-  float angle;        // angulo
-  float rotation_spd;        // angulo
-  float sprite_angle;        // angulo
-  int state;          // estado
-  C2D_Sprite *sprite; // sprite asociado
+  float angle;       
+  float rotation_spd;        
+  float sprite_angle;        
+  int state;  
+
+  float graze_radius;
+  float graze_power;        
+  bool grazed;   
+
+  C2D_Sprite *sprite; 
+
 } bullet_enemy;
 
 typedef struct laser {  // BULLET OBJ
@@ -355,6 +380,8 @@ typedef struct barrage_enemy {  // BULLET OBJ
   C2D_Sprite *sprite;       // sprite asociado
   bullet_enemy *bullet;     // proyectil enemigo
 } barrage_enemy;
+
+
 
 inline int inside_top_screen(float x, float y)
 {

@@ -52,15 +52,22 @@ typedef struct object_2d_info {
     float rotation_velocity; ///< 2D object rotation velocity information
     sprite_refresh_info_t refresh_info; ///< 2D object refresh information
     sprite_frame_info_t frame_info; ///< 2D object frame information
+    bool active;
 } object_2d_info_t;
 
 typedef struct
 {
 	C2D_Sprite spr;
 	float dx, dy;   // velocidad
-	float x, y;     // posición
+	float x, y;     // posiciï¿½n
 	bool pasa;      // cambia de pantalla
 } Sprite;
+
+typedef struct array_sprites {
+
+  struct object_2d_info_t *sprites[2];
+
+} array_sprites;
 
 
 /**
@@ -79,9 +86,10 @@ typedef struct
  * @param[in] rotation Initial rotation
  * @param[in] animation_refresh_time Sprite animation refresh time [Unit: ms]
  * @param[in] loop_once Play sprite animation loop once or forever
+ * @param[in] active If true, draw the sprite anim. otherwise do not.
  * @returns None
  */
-void initialize_object(object_2d_info_t* object, C2D_Sprite* sprites, const char* filename, const sprite_pivot_t pivot, const sprite_position_t position, const float rotation, const float rotation_velocity, uint64_t animation_refresh_time, bool loop_once);
+void initialize_object(object_2d_info_t* object, C2D_Sprite* sprites, const char* filename, const sprite_pivot_t pivot, const sprite_position_t position, const float rotation, const float rotation_velocity, uint64_t animation_refresh_time, bool loop_once, bool active);
 
 /**
  * @brief Deinitialize 2D object.
@@ -126,7 +134,5 @@ void draw_sprite_animation(object_2d_info_t* object);
  void reset_frame(object_2d_info_t* object);
 
  int get_frame_index(object_2d_info_t* object);
-
- void draw_bg_loop(object_2d_info_t* pre_obj[], int size, int res);
 
 #endif /* SPRITE_ANIMATION_MANAGER_H */
