@@ -29,3 +29,7 @@
 #define sprites_ui_boss_idx 25
 #define sprites_item_frame_idx 26
 #define sprites_player_ts_idx 27
+#define sprites_enemy_sphere_blue_idx 28
+#define sprites_enemy_sphere_green_idx 29
+#define sprites_enemy_sphere_red_idx 30
+#define sprites_enemy_sphere_yellow_idx 31

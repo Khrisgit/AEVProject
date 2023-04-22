@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <time.h>
@@ -18,12 +19,15 @@
 #include "system_math.h"
 #include "main_debug.h"
 
-#define MAX_MINIONS              50
+#define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+
+
+#define MAX_MINIONS              120
 #define MAX_BOSSES               5
 #define MAX_SPRITES   			     300
 #define MAX_BULLETS   			     300
 #define MAX_ENEMY_BULLETS        5000
-#define MAX_ENEMY_SHIPS          32
+#define MAX_ENEMY_SHIPS          120
 
 // Tamaño de las 2 pantallas. 
 
@@ -255,12 +259,14 @@ typedef struct minion {
   };
   
   float angle;
+  float rotation_speed;
   float radius;
   
   bool invencible;
   enemy_state_t state;
   //loot_table_t loot_table;
-  object_2d_info_t* enemy_spr;
+  C2D_Sprite* enemy_spr;
+  bool top;
   
 } minion;
 
