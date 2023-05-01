@@ -13,7 +13,7 @@ bg_space.png
 laser_yellow.png
 hitbox.png
 star_yellow.png
-star_mini_2.png
+star_mini_red.png
 star_blue.png
 orb_green.png
 score_point.png
@@ -27,3 +27,15 @@ player_mp.png
 ui_boss.png
 item_frame.png
 player_ts.png
+enemy_sphere_blue.png
+enemy_sphere_green.png
+enemy_sphere_red.png
+enemy_sphere_yellow.png
+sphere_tuto.png
+orb_blue.png
+orb_orange.png
+orb_red.png
+orb_yellow.png
+heal_item.png
+star_mid_red.png
+score_point_a.png

@@ -1,14 +1,6 @@
 #ifndef SYSTEM_MATH_H
 #define SYSTEM_MATH_H
 
-// Generic functions
-#define abs(a) _Generic((a), \
-    int:   abs(a),  \
-    float: absf(a), \
-    double: absd(a))
-
-/* Types */
-
 typedef struct {
   float x;
   float y;
@@ -158,6 +150,19 @@ inline float randomBetween(float min, float max)
 	float rand_float = ((float)rand_int / (float)RAND_MAX) * (max - min) + min;
 	
   return rand_float;
+
+}
+
+inline int intRandomBetween(int min, int max)
+{
+
+  int res;
+
+  if(min > max){ res = min; min = max; max = res; }
+
+  int random_num = (rand() % (max - min + 1)) + min;
+  
+  return random_num;
 
 }
 

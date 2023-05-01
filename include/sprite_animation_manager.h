@@ -65,7 +65,7 @@ typedef struct
 
 typedef struct array_sprites {
 
-  struct object_2d_info_t *sprites[2];
+    object_2d_info_t *sprites[2];
 
 } array_sprites;
 
