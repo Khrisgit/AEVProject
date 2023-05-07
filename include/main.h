@@ -14,7 +14,6 @@
 #include <stdlib.h>
 #include <time.h>
 #include <chrono>
-#include <mutex>
 #include <thread>
 
 
@@ -27,14 +26,14 @@
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
-#define MAX_MINIONS              120
-#define MAX_BOSSES               5
+#define MAX_MINIONS              300
+#define MAX_BOSSES               4
 #define MAX_HEALS                20
 #define MAX_ORB_POINTS           500
 #define MAX_SPRITES   			     300
 #define MAX_BULLETS   			     300
 #define MAX_ENEMY_BULLETS        5000
-#define MAX_ENEMY_SHIPS          120
+#define MAX_ENEMY_SHIPS          300
 
 // Tamaño de las 2 pantallas. 
 
@@ -118,8 +117,6 @@ typedef enum {
               BULLET_STATE_INACTIVE,        // 0 
               BULLET_STATE_ACTIVE,          // 1
 } bullet_state_t;
-
-extern std::mutex start_mutex;
 
 
 typedef struct orb_obj {
@@ -729,10 +726,10 @@ void orb_points_logic(orb_point* orb_points, player_str* player){
       if (cirlce_inside_circle(orb_points[j].x, orb_points[j].y, player->x, player->y, player->radius, orb_points[j].radius + 5))
       {
         if(orb_points[j].type == ORB_POINT_TYPE_Y)
-        player->orb_energy += 10; // CAMBIAR AQUÍ
+        player->orb_energy += 25; // CAMBIAR AQUÍ
 
         if(orb_points[j].type == ORB_POINT_TYPE_B)
-        player->orb_energy += 4; // CAMBIAR AQUÍ
+        player->orb_energy += 10; // CAMBIAR AQUÍ
 
         orb_points[j].state = ORB_POINT_STATE_INACTIVE;
         orb_points[j-MAX_ORB_POINTS/2].state = ORB_POINT_STATE_INACTIVE;
@@ -794,7 +791,10 @@ void heal_logic(heal* heals, player_str* player){
 
       if (cirlce_inside_circle(heals[j].x, heals[j].y, player->x, player->y, player->radius, heals[j].radius + 7))
       {
-        player->health += 1;
+
+        if(player->health != PLAYER_HP_MAX)
+        player->health++;
+        playAudio(AUDIO_HEALING);
         heals[j].state = HEAL_STATE_INACTIVE;
         heals[j-MAX_HEALS/2].state = HEAL_STATE_INACTIVE;
       }  

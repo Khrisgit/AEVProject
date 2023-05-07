@@ -151,7 +151,10 @@ C2D_Sprite        tuto_number_0;
 C2D_Sprite        tuto_number_1;
 C2D_Sprite        tuto_graze;
 
-
+char buf[256];
+C2D_Text dynText;
+char buf_2[256];
+C2D_Text dynText_2;
 
 
 std::atomic<std::chrono::steady_clock::time_point> start;
@@ -167,6 +170,16 @@ C2D_Sprite        bg_tuto_top;
 C2D_Sprite        bg_tuto_bot;
 
 C2D_Sprite        tittle_logo;
+C2D_Sprite        tittle_planet;
+C2D_Sprite        tittle_ship_1;
+C2D_Sprite        tittle_ship_2;
+C2D_Sprite        tittle_minions;
+C2D_Sprite        tittle_book;
+C2D_Sprite        tittle_book_s;
+C2D_Sprite        tittle_start;
+C2D_Sprite        tittle_start_s;
+C2D_Sprite        tittle_tutorial;
+C2D_Sprite        tittle_tutorial_s;
 
 C2D_Sprite        UI_bars;
 C2D_Sprite        player_hp;
@@ -240,8 +253,8 @@ bool level_helper_11 = false;
 static bool focus = false; 	// Indica si el PJ está en estado "focus" 
 static bool focus_helper = false; 	// Indica si el PJ está en estado "focus" 
 static float r = 45.0f; 	// Radio de giro de los orbes del PJ
-static float max_enemy_hp_value = 250.0f;
-static float current_enemy_hp_value = 0;
+//static float max_enemy_hp_value = 250.0f;
+//static float current_enemy_hp_value = 0;
 static float t_par[4] = {0.0f, 1.0f, 0.5f, 1.5f};
 static float t_impar[3] = {0.0f, 0.666f, 1.333f};
 static float ts_radius;
@@ -293,12 +306,16 @@ float tutorial_transparency = 0.0f;
 float white_transparency = 0.0f;
 float black_transparency = 1.0f; // SI SE VE TODO NEGRO PONER ESTO A 0
 
+int gameplayStep = 1;
+
 bool in_intro = false;
 bool show_tittle = false;
 bool fade_white = false;
 bool fade_black = false;
 bool fade_normal = true;
 int game_mode = 1;
+bool introCompleted = false;
+
 
 
 bool helper = false;
@@ -360,7 +377,7 @@ void init_player(){
 						false, \
 						true);
 
-
+/*
 	initialize_object(&boss1_object, \
 						boss1_sprite,	\
 						"romfs:/gfx/Boss-1.t3x", \
@@ -429,7 +446,7 @@ void init_player(){
 						robot_1_refresh_ms_time, \
 						false, \
 						true);
-						  
+			*/			  
 	player.x = SCREEN_WIDTH_BOT/2;
 	player.y = SCREEN_HEIGHT_BOT/2;
 	player.yspeed = 0.0f;
@@ -532,8 +549,38 @@ void init_player(){
 	C2D_SpriteFromSheet(&main_menu_bot, screen_spritesheet, 1);
 
 	C2D_SpriteFromSheet(&tittle_logo, bg_spritesheet, 2);
-			C2D_SpriteSetPos(&tittle_logo, SCREEN_WIDTH_TOP/2, SCREEN_HEIGHT_TOP/2 - 5);
-				C2D_SpriteSetCenter(&tittle_logo, 0.5f, 0.5f);
+		C2D_SpriteSetPos(&tittle_logo, SCREEN_WIDTH_TOP/2, SCREEN_HEIGHT_TOP/2 - 5);
+			C2D_SpriteSetCenter(&tittle_logo, 0.5f, 0.5f);
+	C2D_SpriteFromSheet(&tittle_planet, bg_spritesheet, 3);
+		C2D_SpriteSetPos(&tittle_planet, SCREEN_WIDTH_TOP/2, SCREEN_HEIGHT_TOP/2 - 5);
+			C2D_SpriteSetCenter(&tittle_planet, 0.5f, 0.5f);
+	C2D_SpriteFromSheet(&tittle_ship_1, bg_spritesheet, 4);
+		C2D_SpriteSetPos(&tittle_ship_1, 35, 35);
+			C2D_SpriteSetCenter(&tittle_ship_1, 0.5f, 0.5f);
+	C2D_SpriteFromSheet(&tittle_ship_2, bg_spritesheet, 5);
+		C2D_SpriteSetPos(&tittle_ship_2, 350, 100);
+			C2D_SpriteSetCenter(&tittle_ship_2, 0.5f, 0.5f);
+	C2D_SpriteFromSheet(&tittle_minions, bg_spritesheet, 6);
+		C2D_SpriteSetPos(&tittle_minions, SCREEN_WIDTH_TOP/2, SCREEN_HEIGHT_TOP/2 - 15);
+			C2D_SpriteSetCenter(&tittle_minions, 0.5f, 0.5f);
+	C2D_SpriteFromSheet(&tittle_book, bg_spritesheet, 7);
+		C2D_SpriteSetPos(&tittle_book, 270, 170);
+			C2D_SpriteSetCenter(&tittle_book, 0.5f, 0.5f);
+	C2D_SpriteFromSheet(&tittle_book_s, bg_spritesheet, 8);
+		C2D_SpriteSetPos(&tittle_book_s, 270, 184);
+			C2D_SpriteSetCenter(&tittle_book_s, 0.5f, 0.5f);
+	C2D_SpriteFromSheet(&tittle_start, bg_spritesheet, 9);
+		C2D_SpriteSetPos(&tittle_start, 50, 172);
+			C2D_SpriteSetCenter(&tittle_start, 0.5f, 0.5f);
+	C2D_SpriteFromSheet(&tittle_start_s, bg_spritesheet, 10);
+		C2D_SpriteSetPos(&tittle_start_s, 50, 176);
+			C2D_SpriteSetCenter(&tittle_start_s, 0.5f, 0.5f);
+	C2D_SpriteFromSheet(&tittle_tutorial, bg_spritesheet, 11);
+		C2D_SpriteSetPos(&tittle_tutorial, 270, 90);
+			C2D_SpriteSetCenter(&tittle_tutorial, 0.5f, 0.5f);
+	C2D_SpriteFromSheet(&tittle_tutorial_s, bg_spritesheet, 12);
+		C2D_SpriteSetPos(&tittle_tutorial_s, 270, 104);
+			C2D_SpriteSetCenter(&tittle_tutorial_s, 0.5f, 0.5f);
 
 	C2D_SpriteFromSheet(&bg_tuto_top, bg_spritesheet, 0);
 		C2D_SpriteSetPos(&bg_tuto_top, SCREEN_WIDTH_TOP/2, SCREEN_HEIGHT_TOP/2);
@@ -688,12 +735,6 @@ void Init_BG(){
 	C2D_SpriteFromSheet(&fondo2_bottom->spr, general_spritesheet, 10);
 	C2D_SpriteSetCenter(&fondo2_bottom->spr, 0.5f, 1.0f);
 	C2D_SpriteSetPos(&fondo2_bottom->spr, SCREEN_WIDTH_TOP/2 - 40.0f, 0.0f);
-		
-		
-	// fondoout = &sprites[2];
-	// C2D_SpriteFromSheet(&fondoout->spr, general_spritesheet, 2);
-	// C2D_SpriteSetCenter(&fondoout->spr, 0.5f, 1.0f);
-	// C2D_SpriteSetPos(&fondoout->spr, SCREEN_WIDTH_TOP/2, 0.0f);
 		
 }
 
@@ -955,7 +996,8 @@ void set_minions_delete_border_top(float lx, float rx, float uy, float dy, int m
 
 void minion_delete_list(){
 
-	set_minions_delete_border_top(0, 400, -500, 300, 0);
+	for(int i = 0; i < MAX_MINIONS; i++)
+	minions[i].state = ENEMY_STATE_INACTIVE;
 
 }
 
@@ -1145,6 +1187,8 @@ void player_logic(float x, float y, u32 kHeld){
 
 	orb_movement();
 
+
+
 	if(player.skill_power >= 100.0f && player.skills < 5)
 	{
 		player.skills++;
@@ -1239,8 +1283,8 @@ void enemy_ship_logic(void){
 			if (minions[i].current_health <= 0 || minions[i+MAX_MINIONS/2].current_health  <= 0)
 			{
 				for (int ii = 0; ii < 5; ii++){
-					spawn_orb_p(minions[i].x + randomBetween(-50, 50), minions[i].y + randomBetween(-50, 50), true, ORB_POINT_TYPE_B, &orb_charge);
-					spawn_orb_p(minions[i].x + randomBetween(-50, 50), minions[i].y + randomBetween(-50, 50), true, ORB_POINT_TYPE_Y, &orb_charge);
+					spawn_orb_point(minions[i].x + randomBetween(-50, 50), minions[i].y + randomBetween(-50, 50), true, ORB_POINT_TYPE_B, &orb_charge_b);
+					spawn_orb_point(minions[i].x + randomBetween(-50, 50), minions[i].y + randomBetween(-50, 50), true, ORB_POINT_TYPE_Y, &orb_charge);
 				}
 				minions[i].state = ENEMY_STATE_INACTIVE;
 			}  
@@ -1265,8 +1309,8 @@ void enemy_ship_logic(void){
 			if (minions[j].current_health <= 0 || minions[j-MAX_MINIONS/2].current_health  <= 0)
 			{
 				for (int jj = 0; jj < 5; jj++){
-				spawn_orb_p(minions[j].x + randomBetween(-50, 50), minions[j].y + randomBetween(-50, 50), false, ORB_POINT_TYPE_B, &orb_charge);
-				spawn_orb_p(minions[j].x + randomBetween(-50, 50), minions[j].y + randomBetween(-50, 50), false, ORB_POINT_TYPE_Y, &orb_charge);
+					//spawn_orb_point(minions[j].x + randomBetween(-50, 50), minions[j].y + randomBetween(-50, 50), false, ORB_POINT_TYPE_B, &orb_charge_b);
+					//spawn_orb_point(minions[j].x + randomBetween(-50, 50), minions[j].y + randomBetween(-50, 50), false, ORB_POINT_TYPE_Y, &orb_charge);
 				}
 				minions[j].state = ENEMY_STATE_INACTIVE;
 			}  
@@ -1457,29 +1501,35 @@ double calculateRatio(u32 playerCurrentInvencibility, u32 playerInvencibility) {
     return ratio;
 }
 
-void to_white(){
+void to_white(float t){
 
 	if(white_transparency < 1.0f)
-	white_transparency += 0.01f;
+	white_transparency += 0.01f / t;
 	else
 	fade_white = false;
+
+	if(white_transparency > 1.0f)
+	white_transparency = 1.0f;
 }
 
-void to_black(){
+void to_black(float t){
 
 	if(black_transparency < 1.0f)
-	black_transparency += 0.005f;
+	black_transparency += 0.001f / t;
 	else
 	fade_black = false;
+
+	if(black_transparency > 1.0f)
+	black_transparency = 1.0f;
 }
 
-void to_normal(){
+void to_normal(float t){
 
 	if(black_transparency > 0)
-	black_transparency -= 0.01f;
+	black_transparency -= 0.01f / t;
 	
 	if(white_transparency > 0)
-	white_transparency -= 0.01f;
+	white_transparency -= 0.01f / t;
 }
 	
 void bullet_logic(void){
@@ -1514,9 +1564,10 @@ void bullet_logic(void){
 
 					if(!player.invencible)
 					--player.health; 
-
+					playAudio(AUDIO_P_DEATH);
 					dead = true;
 					enemy_bullets[n].state = BULLET_STATE_INACTIVE;
+					//enemy_bullets[n+MAX_ENEMY_BULLETS/2].state = BULLET_STATE_INACTIVE;
 
 				}
 		    }
@@ -1733,55 +1784,84 @@ void game_intro(){
 		menu_intro_helper = !menu_intro_helper;
 	}
 
-	if(time_passed(lastPrintTime_9, 3000))
+	if(time_passed(lastPrintTime_9, 3000) && !introCompleted)
 	{
 		fade_normal = false;
 		if(!time_passed(lastPrintTime_9, 5000))
-		to_white();
+		to_white(1.0f);
 	}
 
-	if(time_passed(lastPrintTime_9, 5000))
+	if(time_passed(lastPrintTime_9, 5000) && !introCompleted)
 	{
-		to_normal();
+		to_normal(1.0f);
 		if(!helper_8)
 		{
-			playAudio(AUDIO_INTRO);
+			playAudio(AUDIO_INTRO); //AUDIO_INTRO
+			pauseAudio(AUDIO_GAMEPLAY_1);
 			helper_8 = true;
 		}
 		show_tittle = true;
 	}
+	
+	if(time_passed(lastPrintTime_9, 1000) && introCompleted)
+	{
+		
+		if(!helper_8)
+		{
+			fade_normal = true;
+			playAudio(AUDIO_INTRO);
+			helper_8 = true;
+		}
+	
+
+		show_tittle = true;
+	}
+
+	if(fade_normal)
+	to_normal(1.0f);
+
 
 	if(time_passed(lastPrintTime_9, 8000))
 	{
 		in_intro = false;
+		introCompleted = true;
 	}
-
-	if(fade_white)
-	to_white();
-
-	if(fade_black)
-	to_black();
-
-	if(fade_normal)
-	to_normal();
 
 	if(pre_game_state == GAME_STATE_GAMEPLAY)
 	{
-		to_black();
-	}
-	if(pre_game_state == GAME_STATE_TUTORIAL)
-	{
-		to_black();
+		to_black(0.05f);
 
 		if(!helper_7)
 		{
+			fade_normal = false;
 			lastPrintTime_8 = osGetTime();
 			helper_7 = true;
 		}
 
-		if(time_passed(lastPrintTime_8, 2500))
+		if(time_passed(lastPrintTime_8, 2000))
 		{
+			
 			reset_helpers();
+			pauseAudio(AUDIO_INTRO);
+			game_state = GAME_STATE_GAMEPLAY;
+		}
+	}
+	if(pre_game_state == GAME_STATE_TUTORIAL)
+	{
+		to_black(0.05f);
+
+		if(!helper_7)
+		{
+			fade_normal = false;
+			lastPrintTime_8 = osGetTime();
+			helper_7 = true;
+		}
+
+		if(time_passed(lastPrintTime_8, 2000))
+		{
+			
+			reset_helpers();
+			pauseAudio(AUDIO_INTRO);
 			game_state = GAME_STATE_TUTORIAL;
 		}
 			
@@ -1789,7 +1869,22 @@ void game_intro(){
 	}
 	if(pre_game_state == GAME_STATE_CREDITS)
 	{
+		to_black(0.05f);
 
+		if(!helper_7)
+		{
+			fade_normal = false;
+			lastPrintTime_8 = osGetTime();
+			helper_7 = true;
+		}
+
+		if(time_passed(lastPrintTime_8, 2000))
+		{
+			
+			reset_helpers();
+			pauseAudio(AUDIO_INTRO);
+			game_state = GAME_STATE_CREDITS;
+		}
 	}
 
 
@@ -1828,12 +1923,6 @@ void numberRender(){
 	C2D_TextParse(&dynText, g_dynamicBuf, buf);
 	C2D_TextOptimize(&dynText);
 	C2D_DrawText(&dynText, C2D_AlignCenter | C2D_WithColor, 20.0f, 220.0f, 0.5f, 0.52f, 0.52f, C2D_Color32f(1.0f,1.0f,1.0f,1.0f));
-}
-
-void enemy_wave(){
-
-	//a
-	
 }
 
 void text_rectangle(){
@@ -1877,7 +1966,7 @@ void logic(u32 kHeld){
 	if(skill)
 	time_in_skill();
 
-	minion_delete_list();
+	//minion_delete_list();
 
 }
 
@@ -1904,35 +1993,477 @@ void hit_effect(){
 
 }
 
+void gameplayD(){
+
+	if(gameplayStep == 1)
+	{
+		if(!helper_2)
+		{
+			fade_normal = true;
+			tutorial = false;
+			tutorial_helper = false;
+			player.skills = 2;
+			player.skill_power = 0;
+			player.orbs = 1;
+			player.orb_energy = 0;
+			player.orb_points = 0;
+			player.health = 8;
+			spawn_minion_top(SCREEN_WIDTH_TOP/2 , SCREEN_HEIGHT_TOP/2 - 200, 0, 0, 16.0f, 2.0f, 2.0f, &sphere_tuto, true); //0
+			for(int i = 0; i < 2; i++)
+			spawn_minion_top(125 + 150*i , SCREEN_HEIGHT_TOP/2 - 200, 0, 0, 16.0f, 0.5f, 1.0f, &sphere_tuto, true); //1,2
+			for(int i = 0; i < 4; i++)
+			spawn_minion_top(-20 - 55*i , 70, 0, 0, 16.0f, 0.5f, 0.4f, &sphere_tuto, true); //3,4,5,6
+			for(int i = 0; i < 4; i++)
+			spawn_minion_top(420 + 55*i, 170, 0, 0, 16.0f, 0.5f, 0.5f, &sphere_tuto, true); //7,8,9,10
+			for(int i = 0; i < 2; i++)
+			spawn_minion_top(100 + 200*i, -50, 0, 0, 16.0f, 0.5f, 2.5f, &sphere_tuto, true); //11,12
+			spawn_minion_top(200, -50, 0, 0, 16.0f, 0.5f, 4.5f, &sphere_tuto, true); //13
+			spawn_minion_top(SCREEN_WIDTH_TOP/2 , SCREEN_HEIGHT_TOP/2 - 200, 0, 0, 16.0f, 0.5f, 8.0f, &sphere_tuto, true); //14
+			playAudio(AUDIO_GAMEPLAY_1);
+			lastPrintTime_1 = osGetTime();
+			lastPrintTime_2 = osGetTime();
+			lastPrintTime_3 = osGetTime();
+			lastPrintTime_4 = osGetTime();
+			lastPrintTime_5 = osGetTime();
+			lastPrintTime_6 = osGetTime();
+			lastPrintTime_7 = osGetTime();
+			bullet_counter_1 = 3;
+			bullet_counter_2 = 0;
+			helper_2 = true;
+		}
+
+		if(fade_normal)
+		to_normal(0.5f);
+
+
+		if(!helper_4)
+		{
+			if(minions[0].y < SCREEN_HEIGHT_TOP/2)
+			set_minions_speed(0, 0.8f, 0);
+			else
+			{
+				set_minions_speed(0, 0, 0);
+				fade_normal = false;
+			}
+		}
+		
+
+		if(time_passed(lastPrintTime_1 + skill_real_time, 2000))
+		{
+			if (time_passed(lastPrintTime_3 + skill_real_time, 450) && (minions[0].state) && !helper_4) 
+			{
+			lastPrintTime_3 = osGetTime() - skill_time_elapsed;
+			burst(minions[0].x, minions[0].y, level_angle_2, 1.7f, 0.0f, 2.0f, 10.0f, 5.0f, 8, &orb_blue, false, enemy_bullets);
+			level_angle_2 -= 4;
+			}
+			if (time_passed(lastPrintTime_2 + skill_real_time, 450) && (minions[0].state) && !helper_4) 
+			{
+			lastPrintTime_2 = osGetTime() - skill_time_elapsed;
+			burst(minions[0].x, minions[0].y, level_angle_1, 1.7f, 0.0f, 2.0f, 10.0f, 5.0f, 8, &orb_blue, false, enemy_bullets);
+			level_angle_1 += 4;
+			}
+
+			if(!helper_3)
+			{
+				if(minions[1].y < 510 || minions[2].y < 510)
+				{
+					set_minions_speed(0, 1.0f, 1);
+					set_minions_speed(0, 1.0f, 2);
+					if (time_passed(lastPrintTime_4 + skill_real_time, 300) && bullet_counter_1 != 0) 
+					{
+						lastPrintTime_4 = osGetTime() - skill_time_elapsed;
+						if(minions[1].state)
+						shoot_enemy_bullet_aim(minions[1].x, minions[1].y, 4.0f, 0.0f, 2.0f, 8.0f, 1.0f, &shell_red, false, enemy_bullets, &player);
+						bullet_counter_1--;
+						if(bullet_counter_1 == 0)
+						bullet_counter_2 = 3;
+					}
+					if (time_passed(lastPrintTime_5 + skill_real_time, 300) && bullet_counter_2 != 0) 
+					{
+						lastPrintTime_5 = osGetTime() - skill_time_elapsed;
+						if(minions[2].state)
+						shoot_enemy_bullet_aim(minions[2].x, minions[2].y, 4.0f, 0.0f, 2.0f, 8.0f, 1.0f, &shell_red, false, enemy_bullets, &player);
+						bullet_counter_2--;
+						if(bullet_counter_2 == 0)
+						bullet_counter_1 = 3;
+					}
+				}
+				else
+				{
+					set_minions_speed(0, 0, 0);
+					set_minions_speed(0, 0, 1);
+					helper_3 = true;
+				}
+			}
+		}
+
+		if(!minions[0].state)
+		helper_4 = true;
+
+		if(time_passed(lastPrintTime_6 + skill_real_time, 10000) && (minions[0].state))
+		{
+			helper_4 = true;
+			if(minions[0].y > -30)
+			set_minions_speed(0, -1.0f, 0);
+			else
+			{
+				set_minions_speed(0, 0, 0);
+				helper_4 = true;
+			}
+		}
+
+		if(time_passed(lastPrintTime_7 + skill_real_time, 15000))
+		{
+			reset_helpers();
+			gameplayStep++;	
+		}
+	}
+
+	if(gameplayStep == 2) // 2222222222
+	{
+		if(!helper)
+		{
+			lastPrintTime_1 = osGetTime();
+			lastPrintTime_2 = osGetTime();
+			lastPrintTime_3 = osGetTime();
+			lastPrintTime_4 = osGetTime();
+			lastPrintTime_5 = osGetTime();
+			lastPrintTime_6 = osGetTime();
+			lastPrintTime_7 = osGetTime();
+			helper = true;
+			skill_real_time=0;
+			skill_time_elapsed=0;
+
+		}
+
+			for(int j = 3; j < 7; j++)
+			{
+				if(minions[j].x < 435)
+				set_minions_speed(1.0f, 0, j);
+				else
+				{
+					set_minions_speed(0, 0, j);
+					minions[j].state = ENEMY_STATE_INACTIVE;
+					
+				}
+			}
+
+			for(int j = 7; j < 11; j++)
+			{
+				if(minions[j].x > -70)
+				set_minions_speed(-1.0f, 0, j);
+				else
+				{
+					set_minions_speed(0, 0, j);
+					minions[j].state = ENEMY_STATE_INACTIVE;
+					
+				}
+			}
+		
+
+		if(time_passed(lastPrintTime_1 + skill_real_time, 1000))
+		{
+
+				if (time_passed(lastPrintTime_2 + skill_real_time, 450)) 
+				{
+					lastPrintTime_2 = osGetTime() - skill_time_elapsed;
+					for(int m = 3; m < 7; m++){
+						if(minions[m].state)
+						shoot_enemy_bullet(minions[m].x, minions[m].y, -90, 1.7f, 0.0f, 2.0f, 12.0f, 5.0f, &bullet_yellow, false, enemy_bullets);
+					}
+				}
+
+
+
+				if (time_passed(lastPrintTime_3 + skill_real_time, 550)) 
+				{
+					lastPrintTime_3 = osGetTime() - skill_time_elapsed;
+					for(int m = 7; m < 11; m++){
+						if(minions[m].state)
+						shoot_enemy_bullet_aim(minions[m].x, minions[m].y, 3.0f, 0.0f, 2.0f, 12.0f, 2.0f, &shell_red, false, enemy_bullets, &player);
+					}
+				}	
+		}
+
+
+		if(time_passed(lastPrintTime_7 + skill_real_time, 15000))
+		{
+			reset_helpers();
+			gameplayStep++;	
+		}
+	}
+
+	if(gameplayStep == 3) // 333333333333333
+	{
+		if(!helper)
+		{
+			lastPrintTime_1 = osGetTime();
+			lastPrintTime_2 = osGetTime();
+			lastPrintTime_3 = osGetTime();
+			lastPrintTime_4 = osGetTime();
+			lastPrintTime_5 = osGetTime();
+			lastPrintTime_6 = osGetTime();
+			lastPrintTime_7 = osGetTime();
+			helper = true;
+			level_angle_1 = 0;
+			skill_real_time=0;
+			skill_time_elapsed=0;
+
+		}
+
+		if(!helper_5){
+
+			if(minions[13].y < 45)
+			set_minions_speed(0, 1.0f, 13);
+			else
+			{
+				set_minions_speed(0, 0, 13);
+					
+			}
+			
+
+			for(int x = 11; x < 13; x++)
+			{
+				if(minions[x].y < 150)
+				set_minions_speed(0, 1.0f, x);
+				else
+				{
+					set_minions_speed(0, 0, x);
+					
+				}
+			}
+		
+		}
+
+		if(time_passed(lastPrintTime_1 + skill_real_time, 2000))
+		{
+
+				if (time_passed(lastPrintTime_2 + skill_real_time, 800)) 
+				{
+					lastPrintTime_2 = osGetTime() - skill_time_elapsed;
+					
+						if(minions[13].state)
+						burst(minions[13].x, minions[13].y, level_angle_1, 1.7f, 0.5f, 11.0f, 24.0f, 5.0f, 12, &yellow_mid_ball, false, enemy_bullets);
+						level_angle_1 += 15;
+					
+				}
+
+
+
+				if (time_passed(lastPrintTime_3 + skill_real_time, 100)) 
+				{
+					lastPrintTime_3 = osGetTime() - skill_time_elapsed;
+					for(int m = 11; m < 13; m++){
+						if(minions[m].state)
+						shoot_enemy_bullet(minions[m].x, minions[m].y, randomBetween(-70, -110), 3.3f, 0.0f, 2.0f, 14.0f, 10.0f, &bullet_red, false, enemy_bullets);
+					}
+				}	
+		}
+
+		if(time_passed(lastPrintTime_6 + skill_real_time, 20000))
+		{
+			helper_5 = true;
+						
+			if(minions[13].y > -20)
+			set_minions_speed(0, -1.0f, 13);
+			else
+			{
+				set_minions_speed(0, 0, 13);
+				minions[13].state = ENEMY_STATE_INACTIVE;
+
+			}
+			
+
+			for(int x = 11; x < 13; x++)
+			{
+				if(minions[x].y > -20)
+				set_minions_speed(0, -1.0f, x);
+				else
+				{
+					set_minions_speed(0, 0, x);
+					minions[x].state = ENEMY_STATE_INACTIVE;
+
+				}
+			}
+		}
+
+
+		if(time_passed(lastPrintTime_7 + skill_real_time, 25000))
+		{
+			reset_helpers();
+			gameplayStep++;	
+		}
+	}
+
+	if(gameplayStep == 4) // 4444444444
+	{
+		if(!helper)
+		{
+			lastPrintTime_1 = osGetTime();
+			lastPrintTime_2 = osGetTime();
+			lastPrintTime_3 = osGetTime();
+			lastPrintTime_4 = osGetTime();
+			lastPrintTime_5 = osGetTime();
+			lastPrintTime_6 = osGetTime();
+			lastPrintTime_7 = osGetTime();
+			lastPrintTime_8 = osGetTime();
+			helper = true;
+			level_angle_1 = 0;
+			level_angle_2 = 0;
+			level_angle_3 = 0;
+			skill_real_time=0;
+			skill_time_elapsed=0;
+
+		}
+
+		if(!helper_1){
+
+			if(minions[14].y < SCREEN_HEIGHT_TOP/2)
+			set_minions_speed(0, 0.8f, 14);
+			else
+			{
+				set_minions_speed(0, 0, 14);
+			}
+		
+		}
+
+		if(time_passed(lastPrintTime_1 + skill_real_time, 4000))
+		{
+
+				if (time_passed(lastPrintTime_2 + skill_real_time, 1000)) 
+				{
+					lastPrintTime_2 = osGetTime() - skill_time_elapsed;
+					
+						if(minions[14].state)
+						burst(minions[14].x, minions[14].y, level_angle_1, 1.7f, 0.5f, 15.0f, 35.0f, 5.0f, 12, &blue_plasma_mid_ball, false, enemy_bullets);
+						level_angle_1 += 15;
+					
+				}
+
+
+
+				if (time_passed(lastPrintTime_3 + skill_real_time, 500) && time_passed(lastPrintTime_5 + skill_real_time, 7000)) 
+				{
+					lastPrintTime_3 = osGetTime() - skill_time_elapsed;
+					
+						if(minions[14].state)
+						burst(minions[14].x, minions[14].y, level_angle_2, 1.7f, 0.5f, 11.0f, 24.0f, 5.0f, 12, &yellow_mid_ball, false, enemy_bullets);
+						level_angle_2 += 10;
+					
+				}	
+
+				if (time_passed(lastPrintTime_4 + skill_real_time, 125) && time_passed(lastPrintTime_6 + skill_real_time, 13000)) 
+				{
+					lastPrintTime_4 = osGetTime() - skill_time_elapsed;
+					
+						if(minions[14].state)
+						burst(minions[14].x, minions[14].y, level_angle_3, 1.7f, 0.5f, 2.0f, 12.0f, 5.0f, 12, &orb_blue, false, enemy_bullets);
+						level_angle_3 += 5;
+					
+				}
+			
+			
+		}
+
+
+		if(time_passed(lastPrintTime_7 + skill_real_time, 20000))
+		{
+			helper_1 = true;
+
+			if(minions[14].y > -100)
+			set_minions_speed(0, -0.8f, 14);
+			else
+			{
+				set_minions_speed(0, 0, 14);
+				minions[14].state = ENEMY_STATE_INACTIVE;
+			}
+
+		}
+
+		if(time_passed(lastPrintTime_7 + skill_real_time, 30000))
+		{
+			reset_helpers();
+			gameplayStep++;	
+		}
+	}
+
+	if(gameplayStep >= 5)
+	{
+		
+		if(!helper)
+		{
+			start = std::chrono::steady_clock::now();
+			tutorial = true;
+			tutorial_helper = true;
+			helper = true;
+			
+		}
+
+		to_black(0.2f);
+		
+		if (hasElapsed(6000, start))
+		{
+			
+			reset_helpers();
+			tutorial = true;
+			tutorial_helper = true;
+			in_intro = false;
+			fade_black = false;
+			fade_normal = true;
+			menu_intro_helper = true;
+			gameplayStep = 1;
+			player.invencible = false;
+			minion_delete_list();
+			pauseAudio(AUDIO_GAMEPLAY_1);
+			game_mode = 0;
+			skill_real_time = 0;
+			skill_time_elapsed = 0;
+			pre_game_state = (game_state_t)GAME_STATE_MANIN_MENU;
+			game_state = GAME_STATE_MANIN_MENU;
+			
+		}
+	}
+
+}
+
 void prueba_time(){
 
 	char buf[256];
 	C2D_Text dynText;
 
-	//if(!skill)
-	//shoting();
 	if(tutorialStep == 1)
 	{
-		tutorial = false;
-		tutorial_helper = false;
-		player.skills = 4;
-	}
-	else
-	{
-		tutorial = true;
-		tutorial_helper = true;
-	}
+		if(!helper_2)
+		{
+			fade_normal = true;
+			spawn_minion_top(SCREEN_WIDTH_TOP/2 , SCREEN_HEIGHT_TOP/2 - 200, 0, 0, 16.0f, 0.5f, 1.0f, &sphere_tuto, true);
+			tutorial = true;
+			tutorial_helper = true;
+			player.skills = 5;
+			player.skill_power = 0;
+			player.orbs = 0;
+			player.orb_energy = 0;
+			//player.orb_charge = 0.0f;
+			player.health = 8;
+			helper_2 = true;
+			playAudio(AUDIO_TUTO);
+		}
 
-	if(minions[0].y < SCREEN_HEIGHT_TOP/2)
+		if(fade_normal)
+		to_normal(0.5f);
+
+		if(minions[0].y < SCREEN_HEIGHT_TOP/2)
 		set_minions_speed(0, 1.5f, 0);
-	else
-	{
-		set_minions_speed(0, 0, 0);
+		else
+		{
+			set_minions_speed(0, 0, 0);
+			fade_normal = false;
+			if(tutorialStep == 1)
+			tutorialStep++;
+		}
+		
 
-		if(tutorialStep == 1)
-		tutorialStep++;
 	}
-	
 
 	if(tutorialStep == 2)
 	snprintf(buf, sizeof(buf), "Hola y bienvenido/a a sala de entrena-\nmiento, donde se repasarán los aspectos\nbásicos necesarios para poder pelear\ncontra los invasores que se aproximan.");
@@ -1986,7 +2517,7 @@ void prueba_time(){
 		if (time_passed(lastPrintTime_5 + skill_real_time, 10000) && bullet_counter_1 < 30)
 		{
 
-			//lastPrintTime_5 = osGetTime() - skill_time_elapsed;
+			// lastPrintTime_5 = osGetTime() - skill_time_elapsed;
 			burst(minions[0].x, minions[0].y, level_angle_3, 3.0f, 0.0f, 2.0f, 0.0f, 0.0f, 30, &orb_red, false, enemy_bullets);
 			level_angle_3 -= randomBetween(0,15);
 
@@ -2259,7 +2790,7 @@ void prueba_time(){
 	{
 
 		if(!helper)
-		{
+		{	// LOS MINIONS ANTERIORES DEBEN MORIR 100, POR LO QUE NO HAY PROBLEMA EN CREAR ESTOS AQUÍ.
 			spawn_minion_top(150 , SCREEN_HEIGHT_TOP/2 - 200, 0, 0, 16.0f, 0.5f, 0.5f, &sphere_tuto, true); //0
 			spawn_minion_top(200 , SCREEN_HEIGHT_TOP/2 - 200, 0, 0, 16.0f, 0.5f, 0.5f, &sphere_tuto, true); //1
 			spawn_minion_top(250 , SCREEN_HEIGHT_TOP/2 - 200, 0, 0, 16.0f, 0.5f, 0.5f, &sphere_tuto, true); //2
@@ -2271,7 +2802,7 @@ void prueba_time(){
 			spawn_minion_top(200 , SCREEN_HEIGHT_TOP/2 - 300, 0, 0, 16.0f, 0.5f, 0.5f, &sphere_tuto, true); //7
 			spawn_minion_top(200 , SCREEN_HEIGHT_TOP/2 - 350, 0, 0, 16.0f, 0.5f, 0.5f, &sphere_tuto, true); //8
 			spawn_minion_top(200 , SCREEN_HEIGHT_TOP/2 - 400, 0, 0, 16.0f, 0.5f, 0.5f, &sphere_tuto, true); //9
-
+			// Y LO MISMO OCURRE CON LOS SIGUIENTES
 			start = std::chrono::steady_clock::now();
 			helper = true;
 		}
@@ -2443,15 +2974,15 @@ void prueba_time(){
 
 	if(tutorialStep == 57)
 	{
-		if(!helper)
+		if(!helper_5)
 		{
 			lastPrintTime_1 = osGetTime();
 			lastPrintTime_2 = osGetTime();
 			lastPrintTime_3 = osGetTime();
-			helper = true;	
+			helper_5 = true;	
 		}
 
-		C2D_Sprite* sp[3] = {&orb_blue, &orb_green, &orb_red};
+		C2D_Sprite* sp[3] = {&bullet_orange, &bullet_red, &bullet_yellow};
 		tutorial = false;
 		tutorial_helper = false;
 
@@ -2470,7 +3001,7 @@ void prueba_time(){
 
 		//randomBetween(0,15)
 
-		if (time_passed(lastPrintTime_2 + skill_real_time, 15000) || !minions[0].state)
+		if (time_passed(lastPrintTime_2 + skill_real_time, 15000))
 		{
 			reset_helpers();
 			tutorial = true;
@@ -2599,9 +3130,10 @@ void prueba_time(){
 		C2D_TextParse(&dynText, g_dynamicBuf, buf);
 		C2D_TextOptimize(&dynText);
 		C2D_DrawText(&dynText, C2D_AlignCenter | C2D_WithColor, 200.0f, 100.0f, 0.5f, 0.6f, 0.6f, C2D_Color32f(1.0f,1.0f,1.0f,1.0f));
+		
 	}
 
-	if(tutorialStep == 59)
+	if(tutorialStep >= 59)
 	{
 		
 		if(!helper)
@@ -2611,20 +3143,34 @@ void prueba_time(){
 			
 		}
 
-		tutorial = false;
-		tutorial_helper = false;
-		to_black();
-
-
-
+		to_black(0.2f);
+		
 		if (hasElapsed(6000, start))
 		{
+			
 			reset_helpers();
-			game_state = GAME_STATE_INTRO;
+			tutorial = true;
+			tutorial_helper = true;
+			fade_black = false;
+			fade_normal = true;
+			minions[0].state = ENEMY_STATE_INACTIVE;
+			minions[MAX_ENEMY_SHIPS/2].state = ENEMY_STATE_INACTIVE;
+			menu_intro_helper = true;
+			tutorialStep = 1;
+			player.invencible = false;
+			minion_delete_list();
+			pauseAudio(AUDIO_TUTO);
+			game_mode = 0;
+			skill_real_time = 0;
+			skill_time_elapsed = 0;
+			pre_game_state = (game_state_t)GAME_STATE_MANIN_MENU;
+			game_state = GAME_STATE_MANIN_MENU;
+			
+
 		}
 	}
-
-	if(tutorialStep == 60)
+ /*
+	if(tutorialStep == 100) // TESTING
 	{
 		
 		if(!helper)
@@ -2646,10 +3192,46 @@ void prueba_time(){
 		}
 	}		
 	
-	
+	*/
 }
 
+void credits_scene(char buf[], char buf_2[], C2D_Text dynText, C2D_Text dynText_2){
 
+
+	if(!helper)
+	{
+			lastPrintTime_1 = osGetTime();
+			fade_normal = true;
+			tutorial = true;
+			tutorial_helper = false;
+			//playAudio(AUDIO_GAMEPLAY_1);
+			helper = true;
+	}
+
+
+		snprintf(buf, 256, "AGRADECIMIENTOS");
+		snprintf(buf_2, 256, "POR IMPLEMENTAR. . .\nAUN ASI, SE ENCUENTRAN EN LA MEMORIA");
+		
+			
+		if (time_passed(lastPrintTime_1, 10000))
+		{
+				
+			reset_helpers();
+			tutorial = true;
+			tutorial_helper = true;
+			in_intro = false;
+			fade_black = false;
+			fade_normal = true;
+			menu_intro_helper = true;
+			pauseAudio(AUDIO_GAMEPLAY_1);
+			game_mode = 0;
+			pre_game_state = (game_state_t)GAME_STATE_MANIN_MENU;
+			game_state = GAME_STATE_MANIN_MENU;
+				
+
+		}
+
+}
 
 
 
@@ -2708,28 +3290,10 @@ int main(int argc, char* argv[]) {
 	for (u32 i = 0; i < cwavList.size(); i++) 
 	cwavStatus.push_back(0);
 
-	//enemy_ships[0] = spawn_enemy_ship(200.0f, 120.0f, 0.0f, 0.0f, 30.0f, 4, 100.0f, &boss1_object, &barrier_object);
-	/*
-	for(int m = 0; m < 2; m++){
-		
-		spawn_minion_top(106.6f*(m+1) + 40, -20, 0, 0.3f, 15.0f, 1.0f, 1, &enemy_sphere_blue, true);
-
-	}
-
-	for(int n = 2; n < 4; n++){
-
-		spawn_minion_top(65*(n-1) + 185*(n-2), -20, 0, 0.4f, 15.0f, 1.0f, 1, &enemy_sphere_red, true);
-
-	}
-	*/
-
-	tutorial_helper = true;
-	tutorial = true;
 	player.orbs = 0;
-	tutorialStep = 57;
+	tutorialStep = 1;
+	gameplayStep = 1;
 	in_intro = true;
-	
-	spawn_minion_top(SCREEN_WIDTH_TOP/2 , SCREEN_HEIGHT_TOP/2 - 200, 0, 0, 16.0f, 0.5f, 1.0f, &sphere_tuto, true);
 
 	// Main loop
 	//-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -2748,7 +3312,7 @@ int main(int argc, char* argv[]) {
 			
 			if(!in_intro)
 			{
-				if (kDown & KEY_B) 
+				if (kDown & KEY_Y) 
 				{
 					//pauseAudio(1);
 					//fade = !fade;
@@ -2757,26 +3321,38 @@ int main(int argc, char* argv[]) {
 					//if (currsound >= (int)cwavList.size())
 					//	currsound = 0;
 					pre_game_state = (game_state_t)game_mode;
+					playAudio(AUDIO_SELECT);
 					
 				}
 				if (kDown & KEY_A) 
 				{
-					fade_black = true;
+					//fade_black = true;
 					//playAudio(AUDIO_INTRO);
 				}
 				if (kDown & KEY_RIGHT) 
 				{
-					if(game_mode < 3)
-					game_mode++;
-					else
-					game_mode = 1;
+					if(game_mode == GAME_STATE_GAMEPLAY)
+					game_mode = GAME_STATE_TUTORIAL;
+					else{
+						if(game_mode == GAME_STATE_TUTORIAL)
+						game_mode = GAME_STATE_CREDITS;
+						else
+						game_mode = GAME_STATE_GAMEPLAY;
+					}
+					
+					playAudio(AUDIO_NAVIGATE);
 				}
 				if (kDown & KEY_LEFT) 
 				{
-					if(game_mode > 1)
-					game_mode--;
-					else
-					game_mode = 3;
+					if(game_mode == GAME_STATE_GAMEPLAY)
+					game_mode = GAME_STATE_CREDITS;
+					else{
+						if(game_mode == GAME_STATE_TUTORIAL)
+						game_mode = GAME_STATE_GAMEPLAY;
+						else
+						game_mode = GAME_STATE_TUTORIAL;
+					}
+					playAudio(AUDIO_NAVIGATE);
 				}
 
 				if(fade && fade_number < 1.0f)
@@ -2798,6 +3374,21 @@ int main(int argc, char* argv[]) {
 			C2D_SceneBegin(bottom);
 
 			C2D_DrawSprite(&main_menu_bot);
+
+			if(show_tittle)
+			{
+				C2D_DrawSprite(&tittle_book);
+				if(game_mode == GAME_STATE_CREDITS)
+				C2D_DrawSprite(&tittle_book_s);
+				
+				C2D_DrawSprite(&tittle_start);
+				if(game_mode == GAME_STATE_GAMEPLAY)
+				C2D_DrawSprite(&tittle_start_s);
+
+				C2D_DrawSprite(&tittle_tutorial);
+				if(game_mode == GAME_STATE_TUTORIAL)
+				C2D_DrawSprite(&tittle_tutorial_s);
+			}
 
 			C2D_DrawRectSolid(0, 0, 0, SCREEN_WIDTH_TOP, SCREEN_HEIGHT_TOP, C2D_Color32f(0.0f, 0.0f, 0.0f, pause_transparency));
 
@@ -2821,15 +3412,20 @@ int main(int argc, char* argv[]) {
 			C2D_DrawRectSolid(0, 0, 0, SCREEN_WIDTH_TOP, SCREEN_HEIGHT_TOP, C2D_Color32f(0.0f, 0.0f, 0.0f, pause_transparency));
 
 			if(show_tittle)
+			{
+			C2D_DrawSprite(&tittle_ship_1);
+			C2D_DrawSprite(&tittle_ship_2);
+			C2D_DrawSprite(&tittle_planet);
+			C2D_DrawSprite(&tittle_minions);
 			C2D_DrawSprite(&tittle_logo);
-
+			
+			}
 			C2D_DrawRectSolid(0, 0, 0, SCREEN_WIDTH_TOP, SCREEN_HEIGHT_TOP, C2D_Color32f(1.0f, 1.0f, 1.0f, white_transparency));
 			C2D_DrawRectSolid(0, 0, 0, SCREEN_WIDTH_TOP, SCREEN_HEIGHT_TOP, C2D_Color32f(0.0f, 0.0f, 0.0f, black_transparency));
 
 			C3D_FrameEnd(0);
 
-		}
-
+		}	
 		if(game_state == GAME_STATE_GAMEPLAY)
 		{
 		
@@ -2839,173 +3435,126 @@ int main(int argc, char* argv[]) {
 			u32 kDown = hidKeysDown();
 			u32 kHeld = hidKeysHeld();
 			
-			if (kDown & KEY_START) {
-				skill = !skill;
-			}
-
-			// Congfigure a sprite refresh time [ms]
-			
-			
-			if (kHeld & KEY_A) {
-				//skill = true;
-				// enemy_ship_t e = spawn_enemy_ship(float SCREEN_WIDTH_BOT/2, float SCREEN_HEIGHT_TOP/2,
-				// float 0, float 0, float 0, u32 255);
-							// Verifica si han pasado al menos 150 milisegundos desde la última vez que se imprimió el sprite.
-				u32 currentTime = osGetTime();
-				if (currentTime - lastPrintTime >= 150) 
-				{
-
-					lastPrintTime = currentTime;
-					// barrage_2(200.0f, 100.0f, 
-					// 2.0f, 2.0f, 90.0f, &bullet_normal_sprite2,
-					// 2.0f, 24, 150.0f, 10);
-					
-					// shoot_enemy_bullet(200.0f, 100.0f, 
-					// player.x, player.y, 45.0f, &bullet_normal_sprite2,
-					// 2.0f);
-					
-					
-					//shoot_enemy_bullet(200.0f, 100.0f, 90.0f, 2.0f, 2.0f, &bullet_normal_sprite2, true);
-					
-					//burst_aim(200.0f, 100.0f, 1.8f, 25.0f, 7, &red_big_ball, false);
+			if (kDown & KEY_START && !skill) {
 				
-					shots = !shots;
-					level_angle_1 = 10.0f;
-				
-				}
+				//pause_
+				pause_helper = !pause_helper;
+
+				if(pause_helper == true)
+				pause_ini = osGetTime();
+
+				if(pause_helper == false)
+				skill_time_elapsed += osGetTime() - pause_ini;
 				
 			}
 
-			//if(shots && !skill)
-			//shoting();
-			
-			if (kDown & KEY_B) 
-			{
+			if(!pause_helper){
 
-				u32 playerCurrentSkill = osGetTime();
-
-				if (playerCurrentSkill - playerSkill >= 1500) 
+				if (kDown & KEY_B && !text && !tutorial) 
 				{
-					playerSkill = playerCurrentSkill;
 
-					if(player.skills > 0)
+					if (time_passed(skill_ini, 1500)) 
 					{
-						--player.skills;
 
-						skill = true;
-						
-						ts_radius = 700.0f;
+						if(player.skills > 0)
+						{
+							playAudio(AUDIO_SKILL);
+							player.skills--;
 
-						if(skill)
-						skill_ini = osGetTime();
+							skill = true;
+							ts_radius = 700.0f;
+							skill_ini = osGetTime();
+							
+						}
 					}
+					
 				}
-				
-			}
-			
-			if ((kHeld & KEY_B) && player_object.refresh_info.refresh_time > ANIMATION_REFRESH_TIME_MIN) {
-				//player_object.refresh_info.refresh_time--;
-				
-			}
-			if (kDown & KEY_A) {
-				//shoot_enemy_bullet_aim(200.0f, 100.0f, 2.0f, 0.0f, 2.0f, &bullet_normal_sprite2, true);
-				//player_object.frame_info.loop_once = true; Z
-				//move_enemy_sprite_to(1.0f, &boss1_object);
-				//level_1(&boss1_object);
+				if (kDown & KEY_A && !tutorial) {
 
-				
-			}
-			if (kDown & KEY_L) {
-				
-				
+					//level_1(&boss1_object);
+					
+				}
+				if (kDown & KEY_L && !tutorial) {
 
-				if(player.orbs == 4)
-				player.orbs = 1;
-				else
-				player.orbs ++;
-				
-				// shot_laser(enemy_ships[0].x, enemy_ships[0].y, 0.0f, 1.0f, 
-				// 		0.0f, 5, &laser_yellow, false);
+					
+
+				}
+				if (kHeld & KEY_L && !tutorial) {
+					focus = true;
+				}
+				else focus = false;
+
+				if (kDown & KEY_R && !tutorial) {	
 						
-				// shot_laser(enemy_ships[0].x, enemy_ships[0].y, 0.0f, 1.0f, 
-				// 		0.0f, 5, &laser_yellow, true);
-				//player_object.frame_info.loop_once = false; X
-			}
-			if (kDown & KEY_R) {
-				//enemy_ships[0].xspeed = -0.7f;
-				//level_1(&enemy_ships[0]);
-				//player.player_spr = &player_iz_object;
-				
-				
-				direction_helper = !direction_helper;
-				
-			}
-			if (kHeld & KEY_Y) {
-				focus = true;
-			}
-			else focus = false;
-			if (kHeld & KEY_X && !skill) {
-				
-				// Verifica si han pasado al menos X milisegundos desde la última vez que se imprimió el sprite.
-				u32 playerShotTimeCurrent = osGetTime();
-				if (playerShotTimeCurrent - playerShotTime >= PLAYER_BULLET_MS) 
-				{
-					playerShotTime = playerShotTimeCurrent;
-					shoot_bullet();
+					if (time_passed(skill_ini, 1500)) 
+					{
+
+						if(player.skills > 0)
+						{
+							playAudio(AUDIO_SKILL);
+							player.skills--;
+
+							skill = true;
+							ts_radius = 700.0f;
+							skill_ini = osGetTime();
+							
+						}
+					}
+						
 				}
-				
-				//deinitialize_object(&player_shot_impact_obj);
-			} 
-		
-			circlePosition pos;
-			
-			hidCircleRead(&pos); 
+				if (kHeld & KEY_Y && !tutorial) {
+					focus = true;
+				}
+				else focus = false;
 
-			//move_player(pos.dx, pos.dy, kHeld);
-			// enemy_ships[0] = spawn_enemy_ship(200.0f, 120.0f, 1.0f, 1.0f, 200.0f, 20.0f, &boss1_object, &barrier_object);
-			
-			player_logic(pos.dx, pos.dy, kHeld);
-			
-			if(!skill)
-			{
-				bullet_logic();
-				enemy_ship_logic();
-				
+				if (kHeld & KEY_X && !skill && !text && !tutorial) {
+					
+					// Verifica si han pasado al menos X milisegundos desde la última vez que se imprimió el sprite.
+					u32 playerShotTimeCurrent = osGetTime();
+
+					if (playerShotTimeCurrent - playerShotTime >= PLAYER_BULLET_MS) 
+					{
+						playerShotTime = playerShotTimeCurrent;
+						playAudio(AUDIO_P_SHOT);
+						shoot_bullet();
+					}
+					
+					//deinitialize_object(&player_shot_impact_obj);
+				} 
+
+				logic(kHeld);
+
+
+
+				update_object(player.player_spr);
+				update_object(&player_iz_object);
+				update_object(&boss1_object);
+				update_object(&barrier_object);
+
 			}
 
-			if(skill)
-			time_in_skill();
+			if(tutorial)
+			{
+				if (kDown & KEY_A) {
+					
+					u32 currentTime = osGetTime();
+					if (currentTime - lastPrintTime >= 50) 
+					{
 
-			orb_logic();
-			//orb_point_logic(orb_points, player.x, player.y, player.radius);
-			
-			
-			// Print debug messages on the bottom screen
-			// printf("\x1b[2;1HCPU:     %6.2f%%\x1b[K", C3D_GetProcessingTime()*6.0f);
-			// printf("\x1b[3;1HGPU:     %6.2f%%\x1b[K", C3D_GetDrawingTime()*6.0f);
-			// printf("\x1b[4;1HCmdBuf:  %6.2f%%\x1b[K", C3D_GetCmdBufUsage()*100.0f);
+						lastPrintTime = currentTime;
 
-			// printf("\x1b[6;1HTime elapsed:  %lld ms\x1b[K", player_object.refresh_info.elapsed);
-			// printf("\x1b[7;1HSprite refresh time:  %lld ms\x1b[K", player_object.refresh_info.refresh_time);
-			// printf("\x1b[8;1HX:  %f", orb_object.position.x);
-			// printf("\x1b[9;1HY:  %f", orb_object.position.y);
+						tutorialStep++;
 
-			// Render the scene
-			
-			
-			update_object(player.player_spr);
-			update_object(&player_iz_object);
-			update_object(&boss1_object);
+					
+					}
+					
+				}
+			}
 
+			tutorial_filter();
 
-			//update_object(&player_shot_impact_obj);
-
-			update_object(&barrier_object);
-			//moveSprites();
-			
-			if(current_enemy_hp_value > -max_enemy_hp_value){current_enemy_hp_value -= 5.0f;}
+			pause_filter();
 		
-			
 			// -------------------------------------------------------------------------------------------------------
 			// --------------------- G A M E P L A Y    P A N T A L L A     I N F E R I O R --------------------------
 			// -------------------------------------------------------------------------------------------------------
@@ -3014,59 +3563,55 @@ int main(int argc, char* argv[]) {
 			C2D_TargetClear(bottom, C2D_Color32f(0.0f, 0.0f, 0.0f, 1.0f));
 			C2D_SceneBegin(bottom);
 				
-				
+
 			for (size_t i = 2; i < 4; i ++)
 			{
 				C2D_DrawSprite(&sprites[i].spr);
 			}
 			rotacionDelFondo(fondo1_bottom, fondo2_bottom, 600.0f, true);
-			draw_orbs(player_orbs);
-			if(!dead){
-			draw_sprite_animation(player.player_spr);
 
-			}
+			draw_orbs(player_orbs);
+
+			if(blink && !pause_helper)
+			draw_sprite_animation(player.player_spr);
+			
+			if(dead)
+			hit_effect();
 			
 
 			
 			draw_bullets_bot(bullets, enemy_bullets);
-			draw_orb_points_top(orb_points);
+			draw_orb_points_bot(orb_points);
+			draw_heal_bot(heals);
 			draw_minions_bot();
 			
-			
+			if(pause_helper)
+			draw_sprite_only(player.player_spr);
 
 			if(focus)
 				draw_hitbox();
-				
-			
-			
-			if(!skill){
-				
-				//C2D_DrawLine(enemy_ships[0].x-40, enemy_ships[0].y - SCREEN_HEIGHT_BOT, C2D_Color32f(1.0f, 0.0f, 0.1f, 0.5f), 
-					//player.x, player.y, C2D_Color32f(1.0f, 0.0f, 0.1f, 0.5f), 1.0f, 0.0f);
-			}
-			
 
 			if(skill){
 
-				
-				
-				
 				if(ts_radius > 0)
 				{
 				
 					C2D_DrawCircleSolid(player.x , player.y, 0, ts_radius, 
-						C2D_Color32f(1.0f, 0.0f, 0.0f, 0.2f));
+						C2D_Color32f(0.0f, 0.1f, 0.3f, 0.2f));
 						
-					ts_radius -= 15.0f;
-
 				}
-				//skill = !skill;
-			}
 
-			numberRender();
+			}
 
 			draw_boss_pos_bar();
 
+			C2D_DrawRectSolid(0, 0, 0, SCREEN_WIDTH_BOT, SCREEN_HEIGHT_BOT, C2D_Color32f(0.0f, 0.0f, 0.0f, pause_transparency));
+			C2D_DrawRectSolid(0, 0, 0, SCREEN_WIDTH_TOP, SCREEN_HEIGHT_TOP, C2D_Color32f(0.0f, 0.0f, 0.0f, tutorial_transparency));
+			C2D_DrawRectSolid(0, 0, 0, SCREEN_WIDTH_TOP, SCREEN_HEIGHT_TOP, C2D_Color32f(1.0f, 1.0f, 1.0f, white_transparency));
+			C2D_DrawRectSolid(0, 0, 0, SCREEN_WIDTH_TOP, SCREEN_HEIGHT_TOP, C2D_Color32f(0.0f, 0.0f, 0.0f, black_transparency));
+
+			if(!pause_helper)
+			numberRender();
 			
 			C2D_Flush(); // Limpiar buffer de pantalla inferior
 			
@@ -3084,53 +3629,58 @@ int main(int argc, char* argv[]) {
 			}
 			rotacionDelFondo(fondo1_top, fondo2_top, 600.0f, false);
 			
-			if(!skill){
-			//draw_sprite_animation(&boss1_object);
-			//draw_sprite_animation(&barrier_object);
 			
-			//C2D_DrawLine (enemy_ships[0].x, enemy_ships[0].y, C2D_Color32f(1.0f, 0.0f, 0.1f, 0.5f), 
-				//player.x + 40.0f, player.y + 240.0f, C2D_Color32f(1.0f, 0.0f, 0.1f, 0.5f), 1.0f, 0.0f);
-			}
-			if(skill){
-			//draw_sprite_only(&boss1_object);
-			//draw_sprite_only(&barrier_object);
-			}
-			
+
 			draw_bullets_top(bullets, enemy_bullets);
 			draw_orb_points_top(orb_points);
+			draw_heal_top(heals);
 			draw_minions_top();
 
 			
 			if(skill){
 
-				
-				
-				
-				if(ts_radius > 0){
-				
+				if(ts_radius > 0)
+				{
 					C2D_DrawCircleSolid(player.x + 40.0f, player.y + 240.0f, 0, ts_radius, 
-						C2D_Color32f(1.0f, 0.0f, 0.0f, 0.2f));
-						
-					ts_radius -= 22.0f;
-					
-					}
-				//skill = !skill;
+						C2D_Color32f(0.0f, 0.1f, 0.3f, 0.2f));
+				}
+
 			}
 
-			C2D_DrawSprite(&UI_bars);
-			C2D_DrawSprite(&UI_boss);
-			C2D_DrawSprite(&item_frame);
+			if(text)
+			{
 
-			draw_stats(player.health, player.orb_points, player.skills, hp_points, mp_points, ts_points);
+				text_rectangle();
 
-			//C2D_DrawRectangle(SCREEN_WIDTH_TOP - 17, 13, 0, -enemy_ships[0].current_health*(220/enemy_ships[0].health), 4, 
-				//C2D_Color32f(0.0f, 0.7f, 0.1f, 1.0f), C2D_Color32f(0.0f, 1.0f, 0.1f, 1.0f), C2D_Color32f(0.0f, 0.4f, 0.1f, 1.0f), C2D_Color32f(0.0f, 0.7f, 0.1f, 1.0f));
+				if(rect_text_height >= -80)
+				C2D_DrawRectSolid(20, rect_y,  0, 360, rect_text_height, C2D_Color32f(0.0f, 0.0f, 0.0f, 1.0f));
+			}
+			else{
+
+				C2D_DrawSprite(&UI_bars);
+				draw_stats(player.health, player.orb_points, player.skills, hp_points, mp_points, ts_points);
+
+				if(rect_text_height >= -80)
+				{
+					rect_text_height = 0.0f;
+					rect_y = 180;
+				}
+
+			}
+				
+
+			C2D_DrawRectSolid(0, 0, 0, SCREEN_WIDTH_TOP, SCREEN_HEIGHT_TOP, C2D_Color32f(0.0f, 0.0f, 0.0f, pause_transparency));
+			C2D_DrawRectSolid(0, 0, 0, SCREEN_WIDTH_TOP, SCREEN_HEIGHT_TOP, C2D_Color32f(0.0f, 0.0f, 0.0f, tutorial_transparency));
+
+			gameplayD();	
+
+			C2D_DrawRectSolid(0, 0, 0, SCREEN_WIDTH_TOP, SCREEN_HEIGHT_TOP, C2D_Color32f(1.0f, 1.0f, 1.0f, white_transparency));
+			C2D_DrawRectSolid(0, 0, 0, SCREEN_WIDTH_TOP, SCREEN_HEIGHT_TOP, C2D_Color32f(0.0f, 0.0f, 0.0f, black_transparency));
 			
 
 			C3D_FrameEnd(0);
 
 		}
-
 		if(game_state == GAME_STATE_TUTORIAL)
 		{
 		
@@ -3361,28 +3911,68 @@ int main(int argc, char* argv[]) {
 			C3D_FrameEnd(0);
 
 		}
+		if(game_state == GAME_STATE_CREDITS)
+		{
+			u32 kDown = hidKeysDown();
+			
+			if (kDown & KEY_START && !tutorial_helper) 
+			{
+				helper_8 = true;
+			}
+
+			credits_scene(buf, buf_2, dynText, dynText_2);
+
+			// -------------------------------------------------------------------------------------------------------
+			// --------------------- G A M E P L A Y    P A N T A L L A     I N F E R I O R --------------------------
+			// -------------------------------------------------------------------------------------------------------
+			
+			C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
+			C2D_TargetClear(bottom, C2D_Color32f(0.0f, 0.0f, 0.0f, 1.0f));
+			C2D_SceneBegin(bottom);
+
+			
+			C2D_TextParse(&dynText_2, g_dynamicBuf, buf_2);
+			C2D_TextOptimize(&dynText_2);
+			C2D_DrawText(&dynText_2, C2D_AlignCenter | C2D_WithColor, 160.0f, 100.0f, 0.5f, 0.4f, 0.4f, C2D_Color32f(1.0f,1.0f,1.0f,1.0f));
+
+			
+			C2D_Flush();
+
+			// -------------------------------------------------------------------------------------------------------
+			// --------------------- G A M E P L A Y    P A N T A L L A    S U P E R I O R --------------------------
+			// -------------------------------------------------------------------------------------------------------
+			
+			C3D_FrameBegin(C3D_FRAME_SYNCDRAW);
+			C2D_TargetClear(top, C2D_Color32f(0.0f, 0.0f, 0.0f, 1.0f));
+			C2D_SceneBegin(top);
+
+			
+			
+			C2D_TextParse(&dynText, g_dynamicBuf, buf);
+			C2D_TextOptimize(&dynText);
+			C2D_DrawText(&dynText, C2D_AlignCenter | C2D_WithColor, 200.0f, 100.0f, 0.5f, 0.6f, 0.6f, C2D_Color32f(1.0f,1.0f,1.0f,1.0f));
+	
+			C3D_FrameEnd(0);
+		}
+		
 	}
 
 	// Delete graphics
 	deinitialize_object(&player_object);
-	deinitialize_object(&boss1_object);
-	deinitialize_object(&barrier_object);
+	//deinitialize_object(&boss1_object);
+	//deinitialize_object(&barrier_object);
+
 	C2D_SpriteSheetFree(general_spritesheet);
+	C2D_SpriteSheetFree(bg_spritesheet);
+	C2D_SpriteSheetFree(screen_spritesheet);
 
 	// Free the audio thread
-    //threadJoin(skillId, UINT64_MAX);
-    //threadFree(skillId);
 	freeCwavList();
 
-
-
-
     // Cleanup audio things and de-init platform features
-
     ndspExit();
 	
 	// Deinit libs
-	
 	C2D_Fini();
 	C3D_Fini();
 	gfxExit();

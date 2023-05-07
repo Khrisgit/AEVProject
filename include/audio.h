@@ -26,6 +26,12 @@ const char* fileList[] =
     "romfs:/audio/e_damage.cwav",       // 2 
     "romfs:/audio/p_shot.cwav",         // 3
     "romfs:/audio/healing.cwav",        // 4
+	"romfs:/audio/e_dead.cwav",         // 5
+	"romfs:/audio/select.cwav",         // 6
+	"romfs:/audio/navigate.cwav",       // 7
+	"romfs:/audio/p_death.cwav",        // 8
+	"romfs:/audio/tuto.cwav",   	    // 9
+	"romfs:/audio/gameplay_1.cwav",   	// 10
 };
 
 typedef enum {
@@ -34,7 +40,12 @@ typedef enum {
               AUDIO_E_DAMAGE,           // 2
               AUDIO_P_SHOT,             // 3
               AUDIO_HEALING,            // 4
-              AUDIO_E_Death             // 5
+              AUDIO_E_DEATH,            // 5
+			  AUDIO_SELECT,             // 6
+			  AUDIO_NAVIGATE,           // 7
+			  AUDIO_P_DEATH,            // 8
+			  AUDIO_TUTO,	            // 9
+			  AUDIO_GAMEPLAY_1,	        // 10
 } audio_enum_t;
 
 const u8 maxSPlayList[] =
@@ -44,9 +55,12 @@ const u8 maxSPlayList[] =
 	3,
 	4,
 	4,
-	1,
-	1,
-	1
+	5,
+	5,
+	5,
+	5,
+	5,
+	3,
 };
 
 const char* bit_str[] = 
